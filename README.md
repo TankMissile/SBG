@@ -7,9 +7,12 @@ A Simple Box Game
 You play as a blue, smiling box.
 
 <b>(Default) Controls:</b><br />
-Jump : W, Space<br />
-Move left/right : A/D<br />
-Crouch : S<br />
+<table>
+<tr><th>Name</th><th>Usage</th></tr>
+<tr><td>Jump</td><td>W, Space</td></tr>
+<tr><td>Move left/right</td><td>A/D</td></tr>
+<tr><td>Crouch</td><td>S</td></tr>
+</table>
 
 <b>Abilities:</b><br />
 <table>
