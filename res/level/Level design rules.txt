@@ -1,0 +1,14 @@
+The format is as follows:
+player:
+pl {xx} {yy}
+
+wall:
+wa {xx} {yy} {material}
+
+
+
+material codes:
+no: none (solid color)
+st: stone
+di: dirt
+wd: wood

@@ -23,7 +23,7 @@ public class Player extends JButton implements KeyListener {
 	private final int DECEL = 10; //horizontal deceleration
 	private final int AIR_DECEL = 0; //Rate of horizontal deceleration while airborne
 	private final int VDECEL = 2; //vertical acceleration due to gravity
-	private final int JUMPSPEED = 60; //Initial vertical velocity while jumping
+	private final int JUMPSPEED = 65; //Initial vertical velocity while jumping
 
 	private final int NORMALHEIGHT = 32;
 	private final int NORMALWIDTH = 32;
@@ -264,7 +264,9 @@ public class Player extends JButton implements KeyListener {
 		//Cap fall velocity
 		if(airborne){
 			int tempvcap = VCAP;
+			int tempvdecel = VDECEL;
 			if(leftwallgrab || rightwallgrab){
+				tempvdecel /= 2;
 				if(!crouching)
 					tempvcap = SLIDECAP;
 				else
@@ -274,10 +276,10 @@ public class Player extends JButton implements KeyListener {
 				tempvcap = VCAP * 6;
 
 			if(vert_velocity > -1 * tempvcap){ //If not falling faster than terminal velocity, accelerate downward
-				vert_velocity -= VDECEL;
+				vert_velocity -= tempvdecel;
 			}
 			else if(vert_velocity < (-1 * tempvcap)){ //If falling faster than terminal velocity, slow down
-				vert_velocity += VDECEL;
+				vert_velocity += tempvdecel;
 			}
 		}
 	}
@@ -296,7 +298,7 @@ public class Player extends JButton implements KeyListener {
 
 					//If moving upwards, grant wall run
 					if(vert_velocity > 0){
-						vert_velocity = JUMPSPEED;
+						vert_velocity = (int)(JUMPSPEED * .7);
 					}
 				}
 			}
@@ -316,14 +318,16 @@ public class Player extends JButton implements KeyListener {
 
 					//If moving upwards, grant wall run
 					if(vert_velocity > 0){
-						vert_velocity  = JUMPSPEED;
+						vert_velocity  = (int)(JUMPSPEED * .7);
 					}
 				}
 			}
 
 			this.setLocation(new Point(boundary[LEFT], this.getLocation().y));
 		}
-		else if(rightwallgrab && x + w < boundary[RIGHT] || leftwallgrab && x > boundary[LEFT]){ //if ran off a wall while sliding/running
+		
+		//Grant Wall climb
+		else if(rightwallgrab && x + w < boundary[RIGHT] || leftwallgrab && x > boundary[LEFT]){
 			if(vert_velocity > 0) //if moving upwards
 				if(rightwallgrab && !moveleft){
 					vert_velocity = 2 * VDECEL;
@@ -336,8 +340,7 @@ public class Player extends JButton implements KeyListener {
 
 			rightwallgrab = false;
 			leftwallgrab = false;
-
-
+			lastgrabbed = 0;
 		}
 	}
 	private void checkVerticalCollisions(){
