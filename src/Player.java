@@ -1,4 +1,5 @@
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -14,7 +15,7 @@ public class Player extends JButton implements KeyListener {
 	private ClientWindow container;
 
 	//Movement caps
-	private final int VCAP = 50; //max fall speed
+	private final int VCAP = 60; //max fall speed
 	private final int HCAP = 40; //max horizontal speed
 	private final int ACCEL = 10; //Rate of horizontal acceleration on ground
 	private final int AIR_ACCEL = 2; //Rate of horizontal acceleration while airborne
@@ -22,8 +23,8 @@ public class Player extends JButton implements KeyListener {
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 60; //Initial vertical velocity while jumping
 
-	private final int NORMALHEIGHT = 64;
-	private final int NORMALWIDTH = 64;
+	private final int NORMALHEIGHT = 32;
+	private final int NORMALWIDTH = 32;
 
 	//Boundaries for movement
 	private int boundary[] = new int[4]; //0 up 1 down 2 left 3 right
@@ -43,6 +44,7 @@ public class Player extends JButton implements KeyListener {
 	private boolean doublejump = false;
 	private boolean airborne = true;
 	private boolean crouching = false;
+	private boolean uncrouch = false;
 	private boolean airdrop = true;
 	private boolean rightwallgrab, leftwallgrab = false;
 	private int lastgrabbed = 0; //store which wall was last grabbed, -1 left 1 right
@@ -63,8 +65,9 @@ public class Player extends JButton implements KeyListener {
 		this.setPreferredSize(new Dimension(w, h));
 		this.setBorderPainted(false);
 		this.setVisible(true);
+		this.setIcon(loadImage("img/gameicon.png"));
+		//this.setIcon(new ImageIcon("img/gameicon.png"));
 		this.addKeyListener(this);
-		this.setIcon(new ImageIcon("img/gameicon.png"));
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
 
@@ -79,8 +82,11 @@ public class Player extends JButton implements KeyListener {
 		while(!kill){
 			if(!pause){
 				//Find boundaries (if in motion)
-				if(vert_velocity != 0 || horiz_velocity != 0)
+				if(vert_velocity != 0 || moveright || moveleft)
 					getBoundaries();
+				
+				if(uncrouch)
+					updateCrouching(false);
 
 				//Reset position and size variables
 				setLocationVars();
@@ -173,6 +179,13 @@ public class Player extends JButton implements KeyListener {
 		pause = b;
 	}
 
+	//Image Handling
+	private ImageIcon loadImage(String str){
+		//System.out.println("Here");
+		//return new ImageIcon(((new ImageIcon(str)).getImage()).getScaledInstance(NORMALWIDTH,NORMALHEIGHT,Image.SCALE_SMOOTH));  //Broken
+		return new ImageIcon(str);
+	}
+	
 
 	//Position and size functions
 	private void setLocationVars(){
@@ -185,14 +198,15 @@ public class Player extends JButton implements KeyListener {
 		if(c){
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT/2);
-			//TODO: update image
 			crouching = true;
 		}
 		else{
+			if(y-NORMALHEIGHT/2 < boundary[UP])
+				return;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT);
-			//TODO: update image
 			crouching = false;
+			uncrouch = false;
 		}
 	}
 	private void performJump(){
@@ -274,8 +288,21 @@ public class Player extends JButton implements KeyListener {
 
 			this.setLocation(new Point(boundary[LEFT], this.getLocation().y));
 		}
-		else if(rightwallgrab && x + w < boundary[RIGHT] || leftwallgrab && x > boundary[LEFT]){
+		else if(rightwallgrab && x + w < boundary[RIGHT] || leftwallgrab && x > boundary[LEFT]){ //if ran off a wall while sliding/running
+			if(vert_velocity > 0) //if moving upwards
+				if(rightwallgrab && !moveleft){
+					vert_velocity = 2 * VDECEL;
+					horiz_velocity = ACCEL * 2;
+				}
+				else if(leftwallgrab && !moveright){
+					vert_velocity = 2 * VDECEL;
+					horiz_velocity = ACCEL * -2;
+				}
+
 			rightwallgrab = false;
+			leftwallgrab = false;
+			
+				
 		}
 	}
 	private void checkVerticalCollisions(){
@@ -339,8 +366,7 @@ public class Player extends JButton implements KeyListener {
 			moveright = false;
 
 		if(Configs.isCrouchKey(key) && crouching){
-			updateCrouching(false);
-			crouching = false;
+			uncrouch = true;
 		}
 
 	}

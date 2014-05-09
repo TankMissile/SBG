@@ -35,7 +35,7 @@ public class ClientWindow extends JFrame{
 		gamebox.setVisible(true);
 		this.setContentPane(gamebox);
 
-		platform = new Platform[4];
+		platform = new Platform[6];
 		platform[0] = new Platform(0, 460, 640, 20, new Color(0,0,0));
 		platform[0].setSize(640,20);
 		platform[1] = new Platform(300,300);
@@ -43,7 +43,11 @@ public class ClientWindow extends JFrame{
 		platform[2] = new Platform(0,300);
 		platform[2].setSize(150,300);
 		platform[3] = new Platform(400,0);
-		platform[3].setSize(20,420);
+		platform[3].setSize(20,430);
+		platform[4] = new Platform(470,50);
+		platform[4].setSize(20,370);
+		platform[5] = new Platform(0,0);
+		platform[5].setSize(20,60);
 		for(Platform p : platform)
 			gamebox.add(p);
 
