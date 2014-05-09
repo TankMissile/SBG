@@ -5,10 +5,10 @@ import java.awt.Point;
 import javax.swing.JPanel;
 
 
-public class Platform extends JPanel {
+public class Wall extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-	public Platform(int x, int y, int w, int h, Color c){
+	public Wall(int x, int y, int w, int h, Color c){
 		this.setPreferredSize(new Dimension(w,h));
 		this.setVisible(true);
 		this.setLocation(new Point(x,y));
@@ -16,7 +16,7 @@ public class Platform extends JPanel {
 		this.repaint();
 	}
 	
-	public Platform(int x, int y){
+	public Wall(int x, int y){
 		this.setPreferredSize(new Dimension(100, 30));
 		this.setVisible(true);
 		this.setLocation(new Point(x,y));

@@ -8,6 +8,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 
+@SuppressWarnings("unused")
 public class Player extends JButton implements KeyListener {
 	private static final long serialVersionUID = 1L;
 
@@ -20,6 +21,7 @@ public class Player extends JButton implements KeyListener {
 	private final int ACCEL = 10; //Rate of horizontal acceleration on ground
 	private final int AIR_ACCEL = 2; //Rate of horizontal acceleration while airborne
 	private final int DECEL = 10; //horizontal deceleration
+	private final int AIR_DECEL = 0; //Rate of horizontal deceleration while airborne
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 60; //Initial vertical velocity while jumping
 
@@ -71,18 +73,19 @@ public class Player extends JButton implements KeyListener {
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
 
-		thread = new Thread(new Runnable(){ @Override public void run(){ run2(); } });
+		thread = new Thread(new Runnable(){ @Override public void run(){ animate(); } });
 		thread.start();
 	}
 
 
 	//Thread
-	private void run2(){
+	private void animate(){
 		boolean kill = false;
 		while(!kill){
-			if(!pause){
+			if(!pause)
+			{
 				//Find boundaries (if in motion)
-				if(vert_velocity != 0 || moveright || moveleft)
+				if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
 					getBoundaries();
 				
 				if(uncrouch)
@@ -128,13 +131,21 @@ public class Player extends JButton implements KeyListener {
 							horiz_velocity += DECEL;
 					}
 				}
-				else
+				else //Air acceleration
 				{
 					if(horiz_velocity > HCAP){ //Moving right
 						horiz_velocity -= DECEL;
 					}
+					else if(horiz_velocity > 0)
+					{
+						horiz_velocity -= AIR_DECEL;
+					}
 					else if(horiz_velocity < -1 * HCAP){ //Moving left
 						horiz_velocity += DECEL;
+					}
+					else if(horiz_velocity < 0)
+					{
+						horiz_velocity += AIR_DECEL;
 					}
 				}
 
@@ -346,9 +357,11 @@ public class Player extends JButton implements KeyListener {
 		if(Configs.isMenuKey(key)){
 			if(!pause){
 				pause = true;
+				container.openGameMenu(true);
 			}
 			else{
 				pause = false;
+				container.openGameMenu(false);
 			}
 		}
 
