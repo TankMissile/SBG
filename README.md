@@ -38,6 +38,14 @@ You play as a blue, smiling box.
   </tr>
   <tr>
     <td>
+      Wall Climb
+    </td>
+    <td>
+      Run off the top of a wall (Wall Run)
+    </td>
+  </tr>
+  <tr>
+    <td>
       Wall Slide
     </td>
     <td>
