@@ -8,7 +8,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 
-@SuppressWarnings("unused")
 public class Player extends JButton implements KeyListener {
 	private static final long serialVersionUID = 1L;
 
@@ -16,7 +15,8 @@ public class Player extends JButton implements KeyListener {
 	private ClientWindow container;
 
 	//Movement caps
-	private final int VCAP = 60; //max fall speed
+	private final int VCAP = 120; //max fall speed
+	private final int SLIDECAP = 17; //max wallslide fall speed
 	private final int HCAP = 40; //max horizontal speed
 	private final int ACCEL = 10; //Rate of horizontal acceleration on ground
 	private final int AIR_ACCEL = 2; //Rate of horizontal acceleration while airborne
@@ -27,6 +27,7 @@ public class Player extends JButton implements KeyListener {
 
 	private final int NORMALHEIGHT = 32;
 	private final int NORMALWIDTH = 32;
+	private final boolean RESIZE_CROUCH = true; //Controls whether to rescale the image when crouching
 
 	//Boundaries for movement
 	private int boundary[] = new int[4]; //0 up 1 down 2 left 3 right
@@ -67,7 +68,7 @@ public class Player extends JButton implements KeyListener {
 		this.setPreferredSize(new Dimension(w, h));
 		this.setBorderPainted(false);
 		this.setVisible(true);
-		this.setIcon(loadImage("img/gameicon.png"));
+		this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT));
 		//this.setIcon(new ImageIcon("img/gameicon.png"));
 		this.addKeyListener(this);
 		this.setSize(w, h);
@@ -84,10 +85,14 @@ public class Player extends JButton implements KeyListener {
 		while(!kill){
 			if(!pause)
 			{
+				//Make sure the character is the focused object (for keylistener)
+				if(!this.isFocusOwner())
+					this.requestFocusInWindow();
+				
 				//Find boundaries (if in motion)
 				if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
 					getBoundaries();
-				
+
 				if(uncrouch)
 					updateCrouching(false);
 
@@ -115,56 +120,8 @@ public class Player extends JButton implements KeyListener {
 					}
 				}
 
-				//Cap velocity / decelerate
-				if(!airborne) //Ground Acceleration
-				{
-					if(horiz_velocity > 0){ //Moving right
-						if(horiz_velocity > HCAP)
-							horiz_velocity = HCAP;
-						else
-							horiz_velocity -= DECEL;
-					}
-					else if(horiz_velocity < 0){ //Moving left
-						if(horiz_velocity < -1 * HCAP)
-							horiz_velocity = -1 * HCAP;
-						else 
-							horiz_velocity += DECEL;
-					}
-				}
-				else //Air acceleration
-				{
-					if(horiz_velocity > HCAP){ //Moving right
-						horiz_velocity -= DECEL;
-					}
-					else if(horiz_velocity > 0)
-					{
-						horiz_velocity -= AIR_DECEL;
-					}
-					else if(horiz_velocity < -1 * HCAP){ //Moving left
-						horiz_velocity += DECEL;
-					}
-					else if(horiz_velocity < 0)
-					{
-						horiz_velocity += AIR_DECEL;
-					}
-				}
-
-				//Cap fall velocity
-				if(airborne){
-					int tempvcap = VCAP;
-					if(leftwallgrab || rightwallgrab)
-						tempvcap /= 4;
-
-					if(airdrop)
-						tempvcap = VCAP * 6;
-
-					if(vert_velocity > -1 * tempvcap){ //If not falling faster than terminal velocity, accelerate downward
-						vert_velocity -= VDECEL;
-					}
-					else if(vert_velocity < (-1 * tempvcap)){ //If falling faster than terminal velocity, match terminal velocity
-						vert_velocity += VDECEL;
-					}
-				}
+				//Determine acceleration (both horizontal and vertical)
+				getAcceleration();
 
 				//check for collisions
 				checkHorizontalCollisions();
@@ -191,12 +148,21 @@ public class Player extends JButton implements KeyListener {
 	}
 
 	//Image Handling
-	private ImageIcon loadImage(String str){
-		//System.out.println("Here");
-		//return new ImageIcon(((new ImageIcon(str)).getImage()).getScaledInstance(NORMALWIDTH,NORMALHEIGHT,Image.SCALE_SMOOTH));  //Broken
-		return new ImageIcon(str);
+	private ImageIcon loadImage(String path, int w, int h){
+
+		java.net.URL imgURL = getClass().getResource(path);
+
+		if (imgURL != null) {
+			ImageIcon img = new ImageIcon(imgURL);
+			Image resize = img.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+			img = new ImageIcon(resize);
+			return img;
+		} else {
+			System.err.println("Couldn't find file: " + path);
+			return null;
+		}
 	}
-	
+
 
 	//Position and size functions
 	private void setLocationVars(){
@@ -209,6 +175,7 @@ public class Player extends JButton implements KeyListener {
 		if(c){
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT/2);
+			if(RESIZE_CROUCH) this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2));
 			crouching = true;
 		}
 		else{
@@ -216,6 +183,7 @@ public class Player extends JButton implements KeyListener {
 				return;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT);
+			if(RESIZE_CROUCH) this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT));
 			crouching = false;
 			uncrouch = false;
 		}
@@ -224,6 +192,7 @@ public class Player extends JButton implements KeyListener {
 		//Check superjump
 		if(crouching && !airborne){
 			vert_velocity = (int)(JUMPSPEED * 1.5);
+			doublejump = true;
 			updateCrouching(false);
 		}
 		//Check air drop
@@ -254,6 +223,61 @@ public class Player extends JButton implements KeyListener {
 						horiz_velocity = HCAP;
 					else if(moveleft)
 						horiz_velocity = -1 * HCAP;
+			}
+		}
+	}
+	private void getAcceleration(){
+		//Cap velocity / decelerate
+		if(!airborne) //Ground Acceleration
+		{
+			if(horiz_velocity > 0){ //Moving right
+				if(horiz_velocity > HCAP)
+					horiz_velocity = HCAP;
+				else
+					horiz_velocity -= DECEL;
+			}
+			else if(horiz_velocity < 0){ //Moving left
+				if(horiz_velocity < -1 * HCAP)
+					horiz_velocity = -1 * HCAP;
+				else 
+					horiz_velocity += DECEL;
+			}
+		}
+		else //Air acceleration
+		{
+			if(horiz_velocity > HCAP){ //Moving right
+				horiz_velocity -= DECEL;
+			}
+			else if(horiz_velocity > 0)
+			{
+				horiz_velocity -= AIR_DECEL;
+			}
+			else if(horiz_velocity < -1 * HCAP){ //Moving left
+				horiz_velocity += DECEL;
+			}
+			else if(horiz_velocity < 0)
+			{
+				horiz_velocity += AIR_DECEL;
+			}
+		}
+
+		//Cap fall velocity
+		if(airborne){
+			int tempvcap = VCAP;
+			if(leftwallgrab || rightwallgrab){
+				if(!crouching)
+					tempvcap = SLIDECAP;
+				else
+					tempvcap = SLIDECAP*2;
+			}
+			if(airdrop)
+				tempvcap = VCAP * 6;
+
+			if(vert_velocity > -1 * tempvcap){ //If not falling faster than terminal velocity, accelerate downward
+				vert_velocity -= VDECEL;
+			}
+			else if(vert_velocity < (-1 * tempvcap)){ //If falling faster than terminal velocity, slow down
+				vert_velocity += VDECEL;
 			}
 		}
 	}
@@ -312,8 +336,8 @@ public class Player extends JButton implements KeyListener {
 
 			rightwallgrab = false;
 			leftwallgrab = false;
-			
-				
+
+
 		}
 	}
 	private void checkVerticalCollisions(){
@@ -343,15 +367,21 @@ public class Player extends JButton implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 
-		if(Configs.isLeftKey(key))
-			moveleft = true;
+		if(!pause){
+			if(Configs.isLeftKey(key))
+				moveleft = true;
 
-		if(Configs.isRightKey(key))
-			moveright = true;
+			if(Configs.isRightKey(key))
+				moveright = true;
 
-		//Check for jumps
-		if(Configs.isJumpKey(key)){
-			performJump();
+			//Check for jumps
+			if(Configs.isJumpKey(key)){
+				performJump();
+			}
+			
+			if(Configs.isCrouchKey(key) && !crouching){
+				updateCrouching(true);
+			}
 		}
 
 		if(Configs.isMenuKey(key)){
@@ -365,23 +395,21 @@ public class Player extends JButton implements KeyListener {
 			}
 		}
 
-		if(Configs.isCrouchKey(key) && !crouching){
-			updateCrouching(true);
-		}
 	}
-	@Override 
+	@Override
 	public void keyReleased(KeyEvent e) {
 		int key = e.getKeyCode();
-		if(Configs.isLeftKey(key))
-			moveleft = false;
+		if(!pause){
+			if(Configs.isLeftKey(key))
+				moveleft = false;
 
-		if(Configs.isRightKey(key))
-			moveright = false;
+			if(Configs.isRightKey(key))
+				moveright = false;
 
-		if(Configs.isCrouchKey(key) && crouching){
-			uncrouch = true;
+			if(Configs.isCrouchKey(key) && crouching){
+				uncrouch = true;
+			}
 		}
-
 	}
 	@Override 
 	public void keyTyped(KeyEvent e) { }

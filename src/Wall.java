@@ -17,7 +17,7 @@ public class Wall extends JPanel {
 	}
 	
 	public Wall(int x, int y){
-		this.setPreferredSize(new Dimension(100, 30));
+		this.setPreferredSize(new Dimension(32, 32));
 		this.setVisible(true);
 		this.setLocation(new Point(x,y));
 		this.repaint();
