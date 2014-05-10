@@ -13,7 +13,7 @@ public class Level extends JLayeredPane{
 	private Player player;
 	private GameMenu gamemenu;
 
-
+	public static final int WALL_DEPTH = 3, ENTITY_DEPTH = 2, PARTICLE_DEPTH = 1, MENU_DEPTH = 0;
 
 	public Level(){
 		super();
@@ -57,9 +57,9 @@ public class Level extends JLayeredPane{
 		wall[15].setSize(1,1);
 		wall[16] = new Wall(5, 17, Wall.STONE);
 		wall[16].setSize(1,1);
-		wall[17] = new Wall(5, 18, Wall.STONE);
+		wall[17] = new Wall(11, 5, Wall.STONE);
 		wall[17].setSize(1,1);
-		wall[18] = new Wall(8, 18, Wall.STONE);
+		wall[18] = new Wall(10, 5, Wall.STONE);
 		wall[18].setSize(1,1);
 		wall[19] = new Wall(8, 17, Wall.STONE);
 		wall[19].setSize(1,1);
@@ -80,32 +80,38 @@ public class Level extends JLayeredPane{
 		wall[27] = new Wall(9, 15, Wall.STONE);
 		wall[27].setSize(1,1);
 		for(Wall p : wall)
-			this.add(p, 0);
+			this.add(p, WALL_DEPTH);
 
 
 		player = new Player(new Point(50, 10), this);
-		this.add(player, 1);
-		
+		this.add(player, ENTITY_DEPTH);
+
 		gamemenu = new GameMenu();
 		gamemenu.setLocation(WIDTH/2-150,HEIGHT/2-200);
-		this.add(gamemenu, 10);
-		
+		this.add(gamemenu, MENU_DEPTH);
+
 		player.pause(false);
 	}
-	
+
 	//Open or close the in-game menu
-		public void openGameMenu(boolean b){
-			if(b){
-				player.pause(true);
-				//gamemenu.open(true);
-				this.revalidate();
-			}
-			else {
-				//gamemenu.open(false);
-				player.pause(false);
-				this.revalidate();
-			}
+	public void openGameMenu(boolean b){
+		if(b){
+			player.pause(true);
+			//gamemenu.open(true);
+			this.revalidate();
 		}
+		else {
+			//gamemenu.open(false);
+			player.pause(false);
+			this.revalidate();
+		}
+	}
+	
+	public void addParticle(int effect, int x, int y){
+		Particle p = new Particle(effect, x, y, this);
+		p.setSize(Particle.TILE_WIDTH, Particle.TILE_WIDTH);
+		this.add(p, PARTICLE_DEPTH);
+	}
 
 	//Find the movement boundaries for the player by checking each wall
 	public int[] findBoundaries(Player o){
@@ -178,8 +184,8 @@ public class Level extends JLayeredPane{
 		return bound;
 	}
 	private boolean checkDesiredDirection(int d, Player o, Wall p){
-		int oue, ode, ole, ore;
-		int pue, pde, ple, pre;
+		int oue, ode, ole, ore; //player edges
+		int pue, pde, ple, pre; //wall edges
 		oue = o.getLocation().y;
 		ode = oue + o.getHeight();
 		ole = o.getLocation().x;
@@ -191,14 +197,14 @@ public class Level extends JLayeredPane{
 
 		switch(d){
 		case UP:
-			if(oue > pde - 3 //wall is above
+			if(oue > pue //wall is above
 					&& ore > ple  //is not to the right
 					&& ole < pre  //is not to the left
 					) 
 				return true;
 			break;
 		case DOWN:
-			if(ode < pue + 3 //wall is below
+			if(ode < pde //wall is below
 					&& ore > ple  //is not to the right
 					&& ole < pre  //is not to the left
 					) 

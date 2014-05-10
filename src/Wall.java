@@ -23,7 +23,7 @@ public class Wall extends JPanel {
 
 	@SuppressWarnings("unused")
 	//integer values for each corner type
-	private final int
+	private static final int
 	TOP = 0,
 	MID = 1,
 	BOT = 2,
@@ -32,7 +32,7 @@ public class Wall extends JPanel {
 	RIGHT = 2,
 	COLUMN = 3;
 
-	public final int TILE_WIDTH = 40, TILE_HEIGHT = 40;
+	public static final int TILE_WIDTH = 40, TILE_HEIGHT = 40;
 	
 	private int type = NONE;
 

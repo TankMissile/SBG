@@ -348,6 +348,8 @@ public class Player extends JButton implements KeyListener {
 	}
 	private void checkVerticalCollisions(){
 		if(this.getLocation().y + h - vert_velocity/10 > boundary[DOWN]){ //hit floor
+			if(vert_velocity < -1 * SLIDECAP - VDECEL)
+				container.addParticle(Particle.DUST_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN] - Particle.TILE_HEIGHT);
 			vert_velocity = 0;
 			doublejump = false;
 			airborne = false;
