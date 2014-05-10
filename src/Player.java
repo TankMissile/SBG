@@ -3,12 +3,17 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 
-public class Player extends JButton implements KeyListener {
+public class Player extends JPanel implements KeyListener {
 	private static final long serialVersionUID = 1L;
 
 	//The parent window
@@ -66,13 +71,14 @@ public class Player extends JButton implements KeyListener {
 		boundary[RIGHT] = 640;
 
 		this.setPreferredSize(new Dimension(w, h));
-		this.setBorderPainted(false);
 		this.setVisible(true);
-		this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT));
+		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
 		//this.setIcon(new ImageIcon("img/gameicon.png"));
 		this.addKeyListener(this);
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
+		this.setOpaque(false);
+		this.setLayout(null);
 
 		thread = new Thread(new Runnable(){ @Override public void run(){ animate(); } });
 		thread.start();
@@ -148,11 +154,11 @@ public class Player extends JButton implements KeyListener {
 	}
 
 	//Image Handling
-	private ImageIcon loadImage(String path, int w, int h){
-
+	private void loadImage(String path, int w, int h){
+		this.removeAll();
 		java.net.URL imgURL = getClass().getResource(path);
 
-		if (imgURL != null) {
+		/*if (imgURL != null) {
 			ImageIcon img = new ImageIcon(imgURL);
 			Image resize = img.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
 			img = new ImageIcon(resize);
@@ -160,7 +166,16 @@ public class Player extends JButton implements KeyListener {
 		} else {
 			System.err.println("Couldn't find file: " + path);
 			return null;
-		}
+		}*/
+		
+		try {
+			BufferedImage bi = ImageIO.read(imgURL);
+			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
+			image.setSize(w, h);
+			this.add(image);
+			this.revalidate();
+			this.repaint();
+		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 	}
 
 
@@ -175,7 +190,7 @@ public class Player extends JButton implements KeyListener {
 		if(c){
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT/2);
-			if(RESIZE_CROUCH) this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2));
+			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
 			crouching = true;
 		}
 		else{
@@ -183,7 +198,7 @@ public class Player extends JButton implements KeyListener {
 				return;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
 			this.setSize(w,NORMALHEIGHT);
-			if(RESIZE_CROUCH) this.setIcon(loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT));
+			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
 			crouching = false;
 			uncrouch = false;
 		}

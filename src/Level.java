@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.Point;
 
 import javax.swing.JLayeredPane;
@@ -81,6 +82,7 @@ public class Level extends JLayeredPane{
 		wall[27].setSize(1,1);
 		for(Wall p : wall)
 			this.add(p, WALL_DEPTH);
+		blendWalls();
 
 
 		player = new Player(new Point(50, 10), this);
@@ -91,6 +93,50 @@ public class Level extends JLayeredPane{
 		this.add(gamemenu, MENU_DEPTH);
 
 		player.pause(false);
+	}
+	//Make the walls blend together
+	private void blendWalls(){
+		boolean up = false, down = false, left = false, right = false;
+		int x = Wall.COLUMN, y = Wall.ROW;
+		
+		for(Wall w: wall){
+			up = down = left = right = false;
+			x = Wall.COLUMN;
+			y = Wall.ROW;
+			for(Wall n: wall){
+				if(w == n) continue;
+				
+				if(w.getLocation().x - Wall.TILE_WIDTH == n.getLocation().x && w.getLocation().y == n.getLocation().y){
+					left = true;
+				}
+				else if(w.getLocation().x + Wall.TILE_WIDTH == n.getLocation().x && w.getLocation().y == n.getLocation().y){
+					right = true;
+				}
+				else if(w.getLocation().y - Wall.TILE_WIDTH == n.getLocation().y && w.getLocation().x == n.getLocation().x){
+					up = true;
+				}
+				else if(w.getLocation().y + Wall.TILE_WIDTH == n.getLocation().y && w.getLocation().x == n.getLocation().x){
+					down = true;
+				}
+			}
+			
+			if(up && down)
+				y = Wall.MID;
+			else if(up)
+				y = Wall.BOT;
+			else if(down)
+				y = Wall.TOP;
+			
+			if(left && right)
+				x = Wall.MID;
+			else if(left)
+				x = Wall.RIGHT;
+			else if(right)
+				x = Wall.LEFT;
+			
+			
+			w.loadTileBackground(x, y);
+		}
 	}
 
 	//Open or close the in-game menu
@@ -107,6 +153,7 @@ public class Level extends JLayeredPane{
 		}
 	}
 	
+	//Add a particle with a given effect to the scene
 	public void addParticle(int effect, int x, int y){
 		Particle p = new Particle(effect, x, y, this);
 		p.setSize(Particle.TILE_WIDTH, Particle.TILE_WIDTH);

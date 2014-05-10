@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,9 +22,8 @@ public class Wall extends JPanel {
 	DIRT = 2,
 	WOOD = 3;
 
-	@SuppressWarnings("unused")
 	//integer values for each corner type
-	private static final int
+	public static final int
 	TOP = 0,
 	MID = 1,
 	BOT = 2,
@@ -41,6 +41,7 @@ public class Wall extends JPanel {
 		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
 		this.setVisible(true);
 		this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
+		this.setBackground(Color.YELLOW);
 		loadTileBackground(3,3);
 		this.setFocusable(false);
 		this.setLayout(null);
@@ -55,7 +56,9 @@ public class Wall extends JPanel {
 	}
 
 	
-	private void loadTileBackground(int x, int y){
+	public void loadTileBackground(int x, int y){
+		this.removeAll();
+		this.setOpaque(false);
 		
 		//get the correct sprite zone for the material
 		switch(type)
