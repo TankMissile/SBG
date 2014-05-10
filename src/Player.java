@@ -12,15 +12,15 @@ public class Player extends JButton implements KeyListener {
 	private static final long serialVersionUID = 1L;
 
 	//The parent window
-	private ClientWindow container;
+	private Level container;
 
 	//Movement caps
 	private final int VCAP = 120; //max fall speed
 	private final int SLIDECAP = 17; //max wallslide fall speed
 	private final int HCAP = 40; //max horizontal speed
-	private final int ACCEL = 10; //Rate of horizontal acceleration on ground
+	private final int ACCEL = 3; //Rate of horizontal acceleration on ground
 	private final int AIR_ACCEL = 2; //Rate of horizontal acceleration while airborne
-	private final int DECEL = 10; //horizontal deceleration
+	private final int DECEL = 3; //horizontal deceleration
 	private final int AIR_DECEL = 0; //Rate of horizontal deceleration while airborne
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 65; //Initial vertical velocity while jumping
@@ -57,8 +57,8 @@ public class Player extends JButton implements KeyListener {
 
 
 	//Constructor
-	public Player(Point p, ClientWindow j){
-		container = j;
+	public Player(Point p, Level l){
+		container = l;
 
 		boundary[UP] = 0;
 		boundary[DOWN] = 460;
@@ -105,9 +105,9 @@ public class Player extends JButton implements KeyListener {
 				//Increase velocity
 				if(!airborne){
 					if(moveright)
-						horiz_velocity += 2 * ACCEL;
-					else if(moveleft)
-						horiz_velocity -= 2 * ACCEL;
+						horiz_velocity += ACCEL;
+					if(moveleft)
+						horiz_velocity -= ACCEL;
 				}
 				else {
 					if(moveright){
@@ -230,16 +230,19 @@ public class Player extends JButton implements KeyListener {
 		//Cap velocity / decelerate
 		if(!airborne) //Ground Acceleration
 		{
+			int temphcap = HCAP;
+			if(crouching) temphcap /= 2;
+			
 			if(horiz_velocity > 0){ //Moving right
-				if(horiz_velocity > HCAP)
-					horiz_velocity = HCAP;
-				else
+				if(horiz_velocity > temphcap)
+					horiz_velocity = temphcap;
+				else if (!moveright)
 					horiz_velocity -= DECEL;
 			}
 			else if(horiz_velocity < 0){ //Moving left
-				if(horiz_velocity < -1 * HCAP)
-					horiz_velocity = -1 * HCAP;
-				else 
+				if(horiz_velocity < -1 * temphcap)
+					horiz_velocity = -1 * temphcap;
+				else if(!moveleft)
 					horiz_velocity += DECEL;
 			}
 		}
@@ -331,11 +334,11 @@ public class Player extends JButton implements KeyListener {
 			if(vert_velocity > 0) //if moving upwards
 				if(rightwallgrab && !moveleft){
 					vert_velocity = 2 * VDECEL;
-					horiz_velocity = ACCEL * 2;
+					horiz_velocity = 20;
 				}
 				else if(leftwallgrab && !moveright){
 					vert_velocity = 2 * VDECEL;
-					horiz_velocity = ACCEL * -2;
+					horiz_velocity = -20;
 				}
 
 			rightwallgrab = false;
@@ -389,11 +392,9 @@ public class Player extends JButton implements KeyListener {
 
 		if(Configs.isMenuKey(key)){
 			if(!pause){
-				pause = true;
 				container.openGameMenu(true);
 			}
 			else{
-				pause = false;
 				container.openGameMenu(false);
 			}
 		}

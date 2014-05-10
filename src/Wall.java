@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -7,10 +6,11 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 
-public class Wall extends JButton {
+public class Wall extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	
@@ -36,39 +36,22 @@ public class Wall extends JButton {
 	
 	private int type = NONE;
 
-
-
-	public Wall(int x, int y, Color c){
-		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
-		this.setVisible(true);
-		this.setLocation(new Point(x,y));
-		this.setBackground(c);
-		this.setForeground(c.darker());
-		this.repaint();
-	}
-
 	public Wall(int x, int y, int t){
 		type = t;
 		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
 		this.setVisible(true);
 		this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
-		loadTileBackground(1,1);
+		loadTileBackground(3,3);
 		this.setFocusable(false);
-		this.setBorderPainted(false);
+		this.setLayout(null);
+		//this.setBorderPainted(false);
+		//this.setEnabled(false);
 		this.repaint();
-	}
-
-	public Wall(int x, int y){
-		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
-		this.setVisible(true);
-		this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
-		this.repaint();
-		this.setBackground(new Color(0,0,0));
 	}
 	
 	@Override
 	public void setSize(int w, int h){
-		super.setSize(w*TILE_WIDTH,h*TILE_HEIGHT);
+		super.setSize(w*TILE_WIDTH, h*TILE_HEIGHT);
 	}
 
 	
@@ -93,8 +76,10 @@ public class Wall extends JButton {
 		}
 		
 		try {
-			BufferedImage sprite = ImageIO.read(getClass().getResource("/img/wallsprite.png")).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
-			this.setIcon(new ImageIcon(sprite.getScaledInstance(TILE_WIDTH, TILE_HEIGHT, Image.SCALE_SMOOTH)));
+			BufferedImage sprite = ImageIO.read(getClass().getResource("/img/wallsprite2.png")).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(TILE_WIDTH, TILE_HEIGHT, Image.SCALE_SMOOTH)));
+			image.setSize(TILE_WIDTH, TILE_HEIGHT);
+			this.add(image);
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + "/img/wallsprite.png"); }
 	}
 

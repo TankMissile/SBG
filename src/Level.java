@@ -1,13 +1,17 @@
-import javax.swing.JPanel;
+import java.awt.Point;
+
+import javax.swing.JLayeredPane;
 
 
 
-public class Level extends JPanel{
+public class Level extends JLayeredPane{
 	private static final long serialVersionUID = 1L;
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
 
 	private Wall[] wall;
+	private Player player;
+	private GameMenu gamemenu;
 
 
 
@@ -15,8 +19,10 @@ public class Level extends JPanel{
 		super();
 	}
 
+	//Load a level
 	public void loadLevel(String path){
-		wall = new Wall[6];
+		this.removeAll();
+		wall = new Wall[28];
 		wall[0] = new Wall(0, 10, Wall.STONE);
 		wall[0].setSize(1,1);
 		wall[1] = new Wall(1, 3, Wall.STONE);
@@ -29,9 +35,77 @@ public class Level extends JPanel{
 		wall[4].setSize(1,1);
 		wall[5] = new Wall(5, 10, Wall.STONE);
 		wall[5].setSize(1,1);
+		wall[6] = new Wall(5, 11, Wall.STONE);
+		wall[6].setSize(1,1);
+		wall[7] = new Wall(5, 12, Wall.STONE);
+		wall[7].setSize(1,1);
+		wall[8] = new Wall(5, 13, Wall.STONE);
+		wall[8].setSize(1,1);
+		wall[9] = new Wall(3, 5, Wall.STONE);
+		wall[9].setSize(1,1);
+		wall[10] = new Wall(3, 6, Wall.STONE);
+		wall[10].setSize(1,1);
+		wall[11] = new Wall(3, 7, Wall.STONE);
+		wall[11].setSize(1,1);
+		wall[12] = new Wall(4, 15, Wall.STONE);
+		wall[12].setSize(1,1);
+		wall[13] = new Wall(5, 15, Wall.STONE);
+		wall[13].setSize(1,1);
+		wall[14] = new Wall(2, 15, Wall.STONE);
+		wall[14].setSize(1,1);
+		wall[15] = new Wall(5, 16, Wall.STONE);
+		wall[15].setSize(1,1);
+		wall[16] = new Wall(5, 17, Wall.STONE);
+		wall[16].setSize(1,1);
+		wall[17] = new Wall(5, 18, Wall.STONE);
+		wall[17].setSize(1,1);
+		wall[18] = new Wall(8, 18, Wall.STONE);
+		wall[18].setSize(1,1);
+		wall[19] = new Wall(8, 17, Wall.STONE);
+		wall[19].setSize(1,1);
+		wall[20] = new Wall(8, 16, Wall.STONE);
+		wall[20].setSize(1,1);
+		wall[21] = new Wall(8, 15, Wall.STONE);
+		wall[21].setSize(1,1);
+		wall[22] = new Wall(8, 14, Wall.STONE);
+		wall[22].setSize(1,1);
+		wall[23] = new Wall(8, 13, Wall.STONE);
+		wall[23].setSize(1,1);
+		wall[24] = new Wall(8, 12, Wall.STONE);
+		wall[24].setSize(1,1);
+		wall[25] = new Wall(8, 11, Wall.STONE);
+		wall[25].setSize(1,1);
+		wall[26] = new Wall(8, 10, Wall.STONE);
+		wall[26].setSize(1,1);
+		wall[27] = new Wall(9, 15, Wall.STONE);
+		wall[27].setSize(1,1);
 		for(Wall p : wall)
-			this.add(p);
+			this.add(p, 0);
+
+
+		player = new Player(new Point(50, 10), this);
+		this.add(player, 1);
+		
+		gamemenu = new GameMenu();
+		gamemenu.setLocation(WIDTH/2-150,HEIGHT/2-200);
+		this.add(gamemenu, 10);
+		
+		player.pause(false);
 	}
+	
+	//Open or close the in-game menu
+		public void openGameMenu(boolean b){
+			if(b){
+				player.pause(true);
+				//gamemenu.open(true);
+				this.revalidate();
+			}
+			else {
+				//gamemenu.open(false);
+				player.pause(false);
+				this.revalidate();
+			}
+		}
 
 	//Find the movement boundaries for the player by checking each wall
 	public int[] findBoundaries(Player o){

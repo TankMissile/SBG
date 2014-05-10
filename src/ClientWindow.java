@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 
 import javax.swing.*;
 
@@ -8,7 +7,6 @@ import javax.swing.*;
 public class ClientWindow extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private Level level;
-	private Player player;
 
 	private final int WIDTH = 1080;
 	private final int HEIGHT = 720;
@@ -33,13 +31,8 @@ public class ClientWindow extends JFrame{
 
 		loadLevel("test");
 
-		player = new Player(new Point(50, 10), this);
-		level.add(player);
-
 		this.revalidate();
 		this.pack();
-
-		player.pause(false);
 	}
 
 	//Load a game level
@@ -48,23 +41,6 @@ public class ClientWindow extends JFrame{
 
 		return;
 	}
-
-	//Open or close the in-game menu
-	public void openGameMenu(boolean b){
-		if(b){
-
-		}
-		else {
-
-		}
-	}
-
-	//Find the movement boundaries for the player by checking each wall
-	public int[] findBoundaries(Player o){
-		//System.out.println("up: " + bounds[0] + " down: " + bounds[1] + " left: " + bounds[2] + " right:  " + bounds[3]);
-		return level.findBoundaries(o);
-	}
-	
 
 	public static void main(String[] args) {
 		new ClientWindow();
