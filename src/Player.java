@@ -29,8 +29,8 @@ public class Player extends JPanel implements KeyListener {
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 65; //Initial vertical velocity while jumping
 
-	private final int NORMALHEIGHT = 32;
-	private final int NORMALWIDTH = 32;
+	public static final int NORMALHEIGHT = 32;
+	public static final int NORMALWIDTH = 32;
 	private final boolean RESIZE_CROUCH = true; //Controls whether to rescale the image when crouching
 
 	//Boundaries for movement
@@ -40,8 +40,8 @@ public class Player extends JPanel implements KeyListener {
 	//Bounds of character
 	private int x = 0;
 	private int y = 0;
-	private int w = NORMALWIDTH;
-	private int h = NORMALHEIGHT;
+	public int w = NORMALWIDTH;
+	public int h = NORMALHEIGHT;
 
 	//Action variables
 	private boolean moveright = false;
@@ -176,16 +176,18 @@ public class Player extends JPanel implements KeyListener {
 	}
 	private void updateCrouching(boolean c){
 		if(c){
+			h = NORMALHEIGHT/2;
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
-			this.setSize(w,NORMALHEIGHT/2);
+			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
 			crouching = true;
 		}
 		else{
 			if(y-NORMALHEIGHT/2 < boundary[UP])
 				return;
+			h = NORMALHEIGHT;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
-			this.setSize(w,NORMALHEIGHT);
+			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
 			crouching = false;
 			uncrouch = false;

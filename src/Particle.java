@@ -20,7 +20,7 @@ public class Particle extends JPanel{
 	private int frame = 0;
 	private Point start;
 	private int lastframe = 0;
-	private boolean loop = false;
+	private int loop = 0;
 	private int loopframe = 0;
 
 	private String filename = "effectsprite";
@@ -59,7 +59,12 @@ public class Particle extends JPanel{
 			if(frame < lastframe){
 				frame += 1;
 			}
-			else if(loop){
+			else if(loop > 1){
+				frame = loopframe;
+				loop--;
+			}
+			else if(loop == -1)
+			{
 				frame = loopframe;
 			}
 			else{
