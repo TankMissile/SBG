@@ -1,5 +1,3 @@
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,7 +17,9 @@ public class Wall extends JPanel {
 	NONE = 0,
 	STONE = 1,
 	DIRT = 2,
-	WOOD = 3;
+	WOOD = 3,
+	EYE = 4,
+	PLATFORM = 5;
 
 	//integer values for each corner type
 	public static final int
@@ -34,15 +34,15 @@ public class Wall extends JPanel {
 	public static final int TILE_WIDTH = 40, TILE_HEIGHT = 40;
 	
 	public int type = NONE;
+	public boolean slidable = false;
+	public boolean hangable = false;
+	public boolean dropthrough = false;
 
 	public Wall(int x, int y, int t){
 		type = t;
-		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
 		this.setVisible(true);
 		this.setBounds(x*TILE_WIDTH,y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-		//this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
-		this.setBackground(Color.YELLOW);
-		loadTileBackground(3,3);
+		//loadTileBackground(3,3);
 		this.setFocusable(false);
 		this.setLayout(null);
 	}
@@ -65,12 +65,26 @@ public class Wall extends JPanel {
 		case DIRT:
 			x +=4; //move to next horizontal section from top
 			break;
+		case EYE:
+			if(x == LEFT)
+				x = 8;
+			else if(x == RIGHT)
+				x = 9;
+			slidable = false;
+			break;
+		case PLATFORM:
+			y +=8;
+			slidable = false;
+			dropthrough = true;
+			break;
 		default:
 			System.err.println("Wall dun goofed.");
 			break;
 		}
 		
 		try {
+			if(type == EYE)
+				System.out.println(" " +  x);
 			BufferedImage sprite = ImageIO.read(getClass().getResource("/img/wallsprite2.png")).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(TILE_WIDTH, TILE_HEIGHT, Image.SCALE_SMOOTH)));
 			image.setSize(TILE_WIDTH, TILE_HEIGHT);

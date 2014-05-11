@@ -34,7 +34,7 @@ public class Player extends JPanel implements KeyListener {
 	private final boolean RESIZE_CROUCH = true; //Controls whether to rescale the image when crouching
 
 	//Boundaries for movement
-	private int boundary[] = new int[4]; //0 up 1 down 2 left 3 right
+	private Boundary boundary[] = new Boundary[4]; //0 up 1 down 2 left 3 right
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 	//Bounds of character
@@ -50,9 +50,9 @@ public class Player extends JPanel implements KeyListener {
 	private int horiz_velocity = 0;
 	private boolean doublejump = false;
 	private boolean airborne = true;
-	private boolean crouching = false;
+	public boolean crouching = false;
 	private boolean uncrouch = false;
-	private boolean airdrop = true;
+	public boolean airdrop = true;
 	private boolean rightwallgrab, leftwallgrab = false;
 	private int lastgrabbed = 0; //store which wall was last grabbed, -1 left 1 right
 	private boolean pause = true;
@@ -64,10 +64,10 @@ public class Player extends JPanel implements KeyListener {
 	public Player(Point p, Level l){
 		container = l;
 
-		boundary[UP] = 0;
-		boundary[DOWN] = 460;
-		boundary[LEFT] = 0;
-		boundary[RIGHT] = 640;
+		boundary[UP] = new Boundary(0);
+		boundary[DOWN] = new Boundary(460);
+		boundary[LEFT] = new Boundary(0);
+		boundary[RIGHT] = new Boundary(640);
 
 		this.setPreferredSize(new Dimension(w, h));
 		this.setVisible(true);
@@ -94,7 +94,7 @@ public class Player extends JPanel implements KeyListener {
 					this.requestFocusInWindow();
 				
 				//Find boundaries (if in motion)
-				if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
+				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
 					getBoundaries();
 
 				if(uncrouch)
@@ -103,7 +103,7 @@ public class Player extends JPanel implements KeyListener {
 				//Reset position and size variables
 				setLocationVars();
 
-				if( y+h < boundary[DOWN]) //if not on the ground
+				if( y+h < boundary[DOWN].value) //if not on the ground
 					airborne = true;
 
 				//Increase velocity
@@ -181,9 +181,11 @@ public class Player extends JPanel implements KeyListener {
 			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
 			crouching = true;
+			if(boundary[DOWN].dropthrough)
+				this.setLocation(this.getLocation().x, this.getLocation().y+1);
 		}
 		else{
-			if(y-NORMALHEIGHT/2 < boundary[UP])
+			if(y-NORMALHEIGHT/2 < boundary[UP].value)
 				return;
 			h = NORMALHEIGHT;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
@@ -295,30 +297,33 @@ public class Player extends JPanel implements KeyListener {
 
 	//Collision Checkers
 	private void checkHorizontalCollisions(){
-		if(x + w + horiz_velocity/10 > boundary[RIGHT]){ //right wall
+		if(x + w + horiz_velocity/10 > boundary[RIGHT].value){ //right wall
 			horiz_velocity = 0;
 
-			if(airborne && !rightwallgrab){
+			if(boundary[RIGHT].slidable && airborne && !rightwallgrab){
 				rightwallgrab = true;
 				if(lastgrabbed <=0){
 					lastgrabbed = 1;
 					doublejump = false;
 
 					//If moving upwards, grant wall run
-					if(vert_velocity > 0){
+					if(vert_velocity > 0 ){
 						vert_velocity = (int)(JUMPSPEED * .7);
 					}
 				}
 			}
+			else if(!boundary[RIGHT].slidable){
+				rightwallgrab = false;
+			}
 
 
 
-			this.setLocation(new Point(boundary[RIGHT] - w, this.getLocation().y));
+			this.setLocation(new Point(boundary[RIGHT].value - w, this.getLocation().y));
 		}
-		else if(x + horiz_velocity/10 < boundary[LEFT]){ //left wall
+		else if(x + horiz_velocity/10 < boundary[LEFT].value){ //left wall
 			horiz_velocity = 0;
 
-			if(airborne && !leftwallgrab){
+			if(boundary[LEFT].slidable && airborne && !leftwallgrab){
 				leftwallgrab = true;
 				if(lastgrabbed >= 0 ){
 					lastgrabbed = -1;
@@ -330,12 +335,15 @@ public class Player extends JPanel implements KeyListener {
 					}
 				}
 			}
+			else if(!boundary[LEFT].slidable){
+				leftwallgrab = false;
+			}
 
-			this.setLocation(new Point(boundary[LEFT], this.getLocation().y));
+			this.setLocation(new Point(boundary[LEFT].value, this.getLocation().y));
 		}
 		
-		//Grant Wall climb
-		else if(rightwallgrab && x + w < boundary[RIGHT] || leftwallgrab && x > boundary[LEFT]){
+		//Grant Wall Climb
+		else if(rightwallgrab && x + w < boundary[RIGHT].value || leftwallgrab && x > boundary[LEFT].value){
 			if(vert_velocity > 0) //if moving upwards
 				if(rightwallgrab && !moveleft){
 					vert_velocity = 2 * VDECEL;
@@ -352,9 +360,9 @@ public class Player extends JPanel implements KeyListener {
 		}
 	}
 	private void checkVerticalCollisions(){
-		if(this.getLocation().y + h - vert_velocity/10 > boundary[DOWN]){ //hit floor
+		if(this.getLocation().y + h - vert_velocity/10 > boundary[DOWN].value){ //hit floor
 			if(vert_velocity < -1 * SLIDECAP - VDECEL)
-				container.addParticle(Particle.DUST_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN] - Particle.TILE_HEIGHT);
+				container.addParticle(Particle.DUST_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 			vert_velocity = 0;
 			doublejump = false;
 			airborne = false;
@@ -362,12 +370,12 @@ public class Player extends JPanel implements KeyListener {
 			leftwallgrab = rightwallgrab = false;
 			lastgrabbed = 0;
 
-			this.setLocation(new Point(this.getX(), boundary[DOWN] - h));
+			this.setLocation(new Point(this.getX(), boundary[DOWN].value - h));
 		}
-		else if(this.getLocation().y - vert_velocity/10 < boundary[UP]){ //hit ceiling
+		else if(this.getLocation().y - vert_velocity/10 < boundary[UP].value){ //hit ceiling
 			vert_velocity = 0;
 			horiz_velocity /= 2;
-			this.setLocation(new Point(this.getX(), boundary[UP]));
+			this.setLocation(new Point(this.getX(), boundary[UP].value));
 		}
 	}
 	private void getBoundaries(){
