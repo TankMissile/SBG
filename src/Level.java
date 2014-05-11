@@ -1,5 +1,14 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -10,6 +19,13 @@ public class Level extends JLayeredPane{
 	private static final long serialVersionUID = 1L;
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
+	private final String WALL_CODE = "wa",
+		STONE_CODE = "st",
+		DIRT_CODE = "dr",
+		WOOD_CODE = "wd",
+		EYE_CODE = "ey",
+		PLATFORM_CODE = "pt",
+		PLAYER_CODE = "pl";
 
 	private Wall[][] wall;
 	private Player player;
@@ -18,92 +34,73 @@ public class Level extends JLayeredPane{
 	public static final int BACKGROUND_DEPTH = 10000, WALL_DEPTH = 200, ENTITY_DEPTH = 100, PARTICLE_DEPTH = 1, MENU_DEPTH = 0;
 
 	public Level(){
-		super();
+		this.setBackground(Color.white);
+		this.setPreferredSize(new Dimension(ClientWindow.WIDTH,ClientWindow.HEIGHT));
+		this.setLayout(null);
+		this.setVisible(true);
 	}
 
 	//Load a level
 	public void loadLevel(String path){
 		this.removeAll();
+		
+		try {
+			InputStream istream = getClass().getResourceAsStream("/level/"+path+".lvl");
+			
+			BufferedReader br = new BufferedReader(new InputStreamReader(istream));
+			String readline = null;
+			String[] splitline;
+			
+			int x, y, t;
+			
+			wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 
-		System.out.println("Generating tiles");
-		wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
-		wall[0][10] = new Wall(0, 10, Wall.STONE);
-		wall[1][3] = new Wall(1, 3, Wall.STONE);
-		wall[2][6] = new Wall(2, 6, Wall.STONE);
-		wall[3][13] = new Wall(3, 13, Wall.STONE);
-		wall[4][13] = new Wall(4, 13, Wall.STONE);
-		wall[5][10] = new Wall(5, 10, Wall.STONE);
-		wall[5][11] = new Wall(5, 11, Wall.STONE);
-		wall[5][12] = new Wall(5, 12, Wall.STONE);
-		wall[5][13] = new Wall(5, 13, Wall.STONE);
-		wall[3][5] = new Wall(3, 5, Wall.STONE);
-		wall[3][6] = new Wall(3, 6, Wall.STONE);
-		wall[3][7] = new Wall(3, 7, Wall.STONE);
-		wall[2][15] = new Wall(2, 15, Wall.WOOD);
-		wall[3][15] = new Wall(3, 15, Wall.WOOD);
-		wall[4][15] = new Wall(4, 15, Wall.WOOD);
-		wall[5][15] = new Wall(5, 15, Wall.STONE);
-		wall[5][16] = new Wall(5, 16, Wall.STONE);
-		wall[11][5] = new Wall(11, 5, Wall.STONE);
-		wall[8][16] = new Wall(8, 16, Wall.STONE);
-		wall[8][15] = new Wall(8, 15, Wall.STONE);
-		wall[8][14] = new Wall(8, 14, Wall.STONE);
-		wall[8][13] = new Wall(8, 13, Wall.STONE);
-		wall[8][12] = new Wall(8, 12, Wall.STONE);
-		wall[8][11] = new Wall(8, 11, Wall.STONE);
-		wall[8][10] = new Wall(8, 10, Wall.STONE);
-		wall[10][5] = new Wall(10, 5, Wall.STONE);
-		//Add some eye blocks
-		wall[15][15] = new Wall(15, 15, Wall.EYE);
-		//add a platform
-		for(int i = 9; i < 20; i++){
-			wall[i][10] = new Wall(i, 10, Wall.PLATFORM);
-		}
-		//add a nice cliff
-		for(int i = 16; i < wall.length; i++){
-			for(int j = 10; j < wall[i].length-1; j++)
-				wall[i][j] = new Wall(i, j, Wall.DIRT);
-		}
-		//add the ground
-		for(int i = 0; i < wall.length; i++){
-			wall[i][17] = new Wall(i, 17, Wall.DIRT);
-		}
-		//let's make a nice house, too
-		for(int i = 0; i < 4; i++){
-			wall[16+i][4-i] = new Wall(16+i, 4-i, Wall.WOOD);
-			wall[26-i][4-i] = new Wall(26-i, 4-i, Wall.WOOD);
-			wall[15+i][4-i] = new Wall(15+i, 4-i, Wall.WOOD);
-			if(i!=0) wall[27-i][4-i] = new Wall(27-i, 4-i, Wall.WOOD);
-			if(true){
-				wall[17+i][4] = new Wall(17+i, 4, Wall.PLATFORM);
-				wall[25-i][4] = new Wall(25-i, 4, Wall.PLATFORM);
+			System.out.println("Loading Level...");
+			while((readline = br.readLine()) != null){
+				splitline = readline.split(" ");
+				
+				if(splitline[0].equals(WALL_CODE)){
+					x = Integer.parseInt(splitline[2]);
+					y = Integer.parseInt(splitline[3]);
+					t = Wall.NONE;
+					if(splitline[1].equals(STONE_CODE)){
+						t = Wall.STONE;
+					}
+					else if(splitline[1].equals(DIRT_CODE)){
+						t = Wall.DIRT;
+					}
+					else if(splitline[1].equals(WOOD_CODE)){
+						t = Wall.WOOD;
+					}
+					else if(splitline[1].equals(EYE_CODE)){
+						t = Wall.EYE;
+					}
+					else if(splitline[1].equals(PLATFORM_CODE)){
+						t = Wall.PLATFORM;
+					}
+					wall[x][y] = new Wall(x, y, t);
+					this.add(wall[x][y], WALL_DEPTH);
+				}
+				else if(splitline[0].equals(PLAYER_CODE)){
+					System.out.println("Adding Player...");
+					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
+					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
+					
+					player = new Player(new Point(x, y), this);
+					this.add(player, ENTITY_DEPTH);
+					System.out.println("Complete.");
+				}
 			}
-		}
-		wall[17][4].type = wall[25][4].type = Wall.STONE;
-		wall[21][4] = new Wall(21,4,Wall.PLATFORM);
-		wall[21][1] = new Wall(21, 1, Wall.WOOD);
-		wall[25][9] = new Wall(25, 9, Wall.STONE);
-		wall[24][9] = new Wall(24, 9, Wall.EYE);
-		for(int j = 0; j < 4; j++){
-			wall[17][5+j] = new Wall(17, 5+j, Wall.STONE);
-			wall[25][5+j] = new Wall(25, 5+j, Wall.STONE);
-			wall[24][5+j] = new Wall(24, 5+j, Wall.EYE);
-			wall[18][5+j] = new Wall(18, 5+j, Wall.EYE);
-		}
-		for(Wall[] r : wall)
-			for(Wall w : r)
-				if(w != null)
-					this.add(w, WALL_DEPTH);
-		System.out.println("Complete.");
-
-		System.out.println("Drawing Textures...");
-		blendWalls();
-		System.out.println("Complete.");
-
-		System.out.println("Adding Player...");
-		player = new Player(new Point(400, 150), this);
-		this.add(player, ENTITY_DEPTH);
-		System.out.println("Complete.");
+			
+			System.out.println("Drawing Textures...");
+			blendWalls();
+			System.out.println("Complete.");
+			
+			System.out.println("Level Loaded.");
+			
+		} 
+		catch (UnsupportedEncodingException e) { e.printStackTrace(); } 
+		catch (IOException e) { e.printStackTrace(); }
 
 		System.out.println("Creating Pause Menu...");
 		gamemenu = new GameMenu();
@@ -116,6 +113,8 @@ public class Level extends JLayeredPane{
 		bgColor.setSize(ClientWindow.WIDTH, ClientWindow.HEIGHT);
 		this.add(bgColor, BACKGROUND_DEPTH);
 		System.out.println("Complete.");
+
+		//saveLevel(path);
 
 		player.pause(false);
 	}
@@ -305,7 +304,7 @@ public class Level extends JLayeredPane{
 
 		//get left boundary
 		for(int i = topleft.x; i >= 0; i--){
-			
+
 			//Eyes don't like to be grabbed
 			if((wall[i][topleft.y] != null && wall[i][topleft.y].type == Wall.EYE) && (wall[i][botleft.y] != null && wall[i][botleft.y].type == Wall.EYE))
 			{
@@ -313,7 +312,7 @@ public class Level extends JLayeredPane{
 			}
 			else
 				bounds[LEFT].slidable = true;
-			
+
 			if(topleft.y >= 0 && wall[i][topleft.y]!= null && wall[i][topleft.y].type != Wall.PLATFORM){
 				bounds[LEFT].value = wall[i][topleft.y].getLocation().x + Wall.TILE_WIDTH;
 				break;
@@ -326,7 +325,7 @@ public class Level extends JLayeredPane{
 
 		//get right boundary
 		for(int i = topright.x; i < wall.length; i++){
-			
+
 			//Eyes don't like to be grabbed
 			if((wall[i][topright.y] != null && wall[i][topright.y].type == Wall.EYE) && (wall[i][botright.y] != null && wall[i][botright.y].type == Wall.EYE))
 			{
@@ -334,7 +333,7 @@ public class Level extends JLayeredPane{
 			}
 			else
 				bounds[RIGHT].slidable = true;
-			
+
 			if(topright.y >= 0 && wall[i][topright.y] != null && wall[i][topright.y].type != Wall.PLATFORM){
 				bounds[RIGHT].value = wall[i][topright.y].getLocation().x;
 				break;
@@ -347,5 +346,61 @@ public class Level extends JLayeredPane{
 
 		//System.out.println("up: " + bounds[0] + " down: " + bounds[1] + " left: " + bounds[2] + " right:  " + bounds[3]);
 		return bounds;
+	}
+
+	//Save all tiles of the level
+	@SuppressWarnings("unused")
+	private void saveLevel(String path){
+		try {
+			File file = new File("res/level/" + path + ".lvl");
+			if(!file.exists()){
+				file.createNewFile();
+			}
+
+			FileWriter fw = null;
+			fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			String writeline = null;
+			for(int i = 0; i < wall.length; i++ ){
+				for(int j = 0; j < wall[i].length; j++){
+					if(wall[i][j] == null) continue; //skip empty spaces
+					
+					writeline = WALL_CODE;
+					
+					switch(wall[i][j].type){
+					case Wall.STONE:
+						writeline += " " + STONE_CODE;
+						break;
+					case Wall.DIRT:
+						writeline += " " + DIRT_CODE;
+						break;
+					case Wall.WOOD:
+						writeline += " " + WOOD_CODE;
+						break;
+					case Wall.EYE:
+						writeline += " " + EYE_CODE;
+						break;
+					case Wall.PLATFORM:
+						writeline += " " + PLATFORM_CODE;
+						break;
+					default:
+						System.err.println("Invalid tile at: " + i + ", " + j);
+						continue;
+					}
+					writeline += " " + i + " " + j;
+					bw.write(writeline);
+					bw.newLine();
+				}
+			}
+			
+			writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+			bw.write(writeline);
+			
+			
+			bw.flush();
+			bw.close();
+		} catch (IOException e) { e.printStackTrace(); }
+
 	}
 }

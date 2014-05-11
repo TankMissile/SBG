@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.*;
@@ -23,14 +22,11 @@ public class ClientWindow extends JFrame{
 		Configs.init();
 
 		level = new Level();
-		level.setBackground(Color.white);
-		level.setPreferredSize(new Dimension(WIDTH,HEIGHT));
-		level.setLayout(null);
-		level.setVisible(true);
 		this.setContentPane(level);
+		//this.pack();
 
 		loadLevel("test");
-
+		
 		this.revalidate();
 		this.pack();
 	}
