@@ -8,7 +8,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -73,7 +72,6 @@ public class Player extends JPanel implements KeyListener {
 		this.setPreferredSize(new Dimension(w, h));
 		this.setVisible(true);
 		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
-		//this.setIcon(new ImageIcon("img/gameicon.png"));
 		this.addKeyListener(this);
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
@@ -157,16 +155,6 @@ public class Player extends JPanel implements KeyListener {
 	private void loadImage(String path, int w, int h){
 		this.removeAll();
 		java.net.URL imgURL = getClass().getResource(path);
-
-		/*if (imgURL != null) {
-			ImageIcon img = new ImageIcon(imgURL);
-			Image resize = img.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
-			img = new ImageIcon(resize);
-			return img;
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}*/
 		
 		try {
 			BufferedImage bi = ImageIO.read(imgURL);

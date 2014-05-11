@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -34,25 +33,18 @@ public class Wall extends JPanel {
 
 	public static final int TILE_WIDTH = 40, TILE_HEIGHT = 40;
 	
-	private int type = NONE;
+	public int type = NONE;
 
 	public Wall(int x, int y, int t){
 		type = t;
 		this.setPreferredSize(new Dimension(TILE_WIDTH, TILE_HEIGHT));
 		this.setVisible(true);
-		this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
+		this.setBounds(x*TILE_WIDTH,y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+		//this.setLocation(new Point(x*TILE_WIDTH,y*TILE_HEIGHT));
 		this.setBackground(Color.YELLOW);
 		loadTileBackground(3,3);
 		this.setFocusable(false);
 		this.setLayout(null);
-		//this.setBorderPainted(false);
-		//this.setEnabled(false);
-		this.repaint();
-	}
-	
-	@Override
-	public void setSize(int w, int h){
-		super.setSize(w*TILE_WIDTH, h*TILE_HEIGHT);
 	}
 
 	

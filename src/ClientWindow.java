@@ -8,12 +8,12 @@ public class ClientWindow extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private Level level;
 
-	private final int WIDTH = 1080;
-	private final int HEIGHT = 720;
+	public static final int WIDTH = 1080;
+	public static final int HEIGHT = 720;
 
 	public ClientWindow(){
 		this.setResizable(false);
-		this.setTitle("QVTN");
+		this.setTitle("SBG");
 		this.setLocationByPlatform(true);
 		this.setIconImage((new ImageIcon(getClass().getResource("/img/gameicon.png"))).getImage());
 		this.getContentPane().setPreferredSize(new Dimension(WIDTH, HEIGHT));

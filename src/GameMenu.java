@@ -17,7 +17,9 @@ public class GameMenu extends JPanel implements ActionListener{
 
 
 	public GameMenu(){
-		this.setSize(new Dimension(300,500));
+		//this.setSize(new Dimension(300,500));
+		//this.setla
+		this.setBounds(ClientWindow.WIDTH/2-150, ClientWindow.HEIGHT/2-200, 300, 500);
 		
 		this.setBackground(Color.WHITE);
 		exit_btn = new JButton("Exit");

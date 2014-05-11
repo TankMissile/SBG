@@ -1,7 +1,8 @@
-import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.Point;
 
 import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 
 
 
@@ -14,7 +15,7 @@ public class Level extends JLayeredPane{
 	private Player player;
 	private GameMenu gamemenu;
 
-	public static final int WALL_DEPTH = 3, ENTITY_DEPTH = 2, PARTICLE_DEPTH = 1, MENU_DEPTH = 0;
+	public static final int BACKGROUND_DEPTH = 10000, WALL_DEPTH = 200, ENTITY_DEPTH = 100, PARTICLE_DEPTH = 1, MENU_DEPTH = 0;
 
 	public Level(){
 		super();
@@ -23,74 +24,79 @@ public class Level extends JLayeredPane{
 	//Load a level
 	public void loadLevel(String path){
 		this.removeAll();
-		wall = new Wall[28];
+		
+		wall = new Wall[55];
 		wall[0] = new Wall(0, 10, Wall.STONE);
-		wall[0].setSize(1,1);
 		wall[1] = new Wall(1, 3, Wall.STONE);
-		wall[1].setSize(1,1);
 		wall[2] = new Wall(2, 6, Wall.STONE);
-		wall[2].setSize(1,1);
 		wall[3] = new Wall(3, 15, Wall.STONE);
-		wall[3].setSize(1,1);
 		wall[4] = new Wall(4, 13, Wall.STONE);
-		wall[4].setSize(1,1);
 		wall[5] = new Wall(5, 10, Wall.STONE);
-		wall[5].setSize(1,1);
 		wall[6] = new Wall(5, 11, Wall.STONE);
-		wall[6].setSize(1,1);
 		wall[7] = new Wall(5, 12, Wall.STONE);
-		wall[7].setSize(1,1);
 		wall[8] = new Wall(5, 13, Wall.STONE);
-		wall[8].setSize(1,1);
 		wall[9] = new Wall(3, 5, Wall.STONE);
-		wall[9].setSize(1,1);
 		wall[10] = new Wall(3, 6, Wall.STONE);
-		wall[10].setSize(1,1);
 		wall[11] = new Wall(3, 7, Wall.STONE);
-		wall[11].setSize(1,1);
 		wall[12] = new Wall(4, 15, Wall.STONE);
-		wall[12].setSize(1,1);
 		wall[13] = new Wall(5, 15, Wall.STONE);
-		wall[13].setSize(1,1);
 		wall[14] = new Wall(2, 15, Wall.STONE);
-		wall[14].setSize(1,1);
 		wall[15] = new Wall(5, 16, Wall.STONE);
-		wall[15].setSize(1,1);
-		wall[16] = new Wall(5, 17, Wall.STONE);
-		wall[16].setSize(1,1);
+		wall[16] = new Wall(5, 17, Wall.DIRT);
 		wall[17] = new Wall(11, 5, Wall.STONE);
-		wall[17].setSize(1,1);
 		wall[18] = new Wall(10, 5, Wall.STONE);
-		wall[18].setSize(1,1);
-		wall[19] = new Wall(8, 17, Wall.STONE);
-		wall[19].setSize(1,1);
+		wall[19] = new Wall(8, 17, Wall.DIRT);
 		wall[20] = new Wall(8, 16, Wall.STONE);
-		wall[20].setSize(1,1);
 		wall[21] = new Wall(8, 15, Wall.STONE);
-		wall[21].setSize(1,1);
 		wall[22] = new Wall(8, 14, Wall.STONE);
-		wall[22].setSize(1,1);
 		wall[23] = new Wall(8, 13, Wall.STONE);
-		wall[23].setSize(1,1);
 		wall[24] = new Wall(8, 12, Wall.STONE);
-		wall[24].setSize(1,1);
 		wall[25] = new Wall(8, 11, Wall.STONE);
-		wall[25].setSize(1,1);
 		wall[26] = new Wall(8, 10, Wall.STONE);
-		wall[26].setSize(1,1);
 		wall[27] = new Wall(9, 15, Wall.STONE);
-		wall[27].setSize(1,1);
+		wall[28] = new Wall(0, 17, Wall.DIRT);
+		wall[29] = new Wall(1, 17, Wall.DIRT);
+		wall[30] = new Wall(2, 17, Wall.DIRT);
+		wall[31] = new Wall(3, 17, Wall.DIRT);
+		wall[32] = new Wall(4, 17, Wall.DIRT);
+		wall[33] = new Wall(5, 17, Wall.DIRT);
+		wall[34] = new Wall(6, 17, Wall.DIRT);
+		wall[35] = new Wall(7, 17, Wall.DIRT);
+		wall[36] = new Wall(8, 17, Wall.DIRT);
+		wall[37] = new Wall(9, 17, Wall.DIRT);
+		wall[38] = new Wall(10, 17, Wall.DIRT);
+		wall[39] = new Wall(11, 17, Wall.DIRT);
+		wall[40] = new Wall(12, 17, Wall.DIRT);
+		wall[41] = new Wall(13, 17, Wall.DIRT);
+		wall[42] = new Wall(14, 17, Wall.DIRT);
+		wall[43] = new Wall(15, 17, Wall.DIRT);
+		wall[44] = new Wall(16, 17, Wall.DIRT);
+		wall[45] = new Wall(17, 17, Wall.DIRT);
+		wall[46] = new Wall(18, 17, Wall.DIRT);
+		wall[47] = new Wall(19, 17, Wall.DIRT);
+		wall[48] = new Wall(20, 17, Wall.DIRT);
+		wall[49] = new Wall(21, 17, Wall.DIRT);
+		wall[50] = new Wall(22, 17, Wall.DIRT);
+		wall[51] = new Wall(23, 17, Wall.DIRT);
+		wall[52] = new Wall(24, 17, Wall.DIRT);
+		wall[53] = new Wall(25, 17, Wall.DIRT);
+		wall[54] = new Wall(26, 17, Wall.DIRT);
 		for(Wall p : wall)
 			this.add(p, WALL_DEPTH);
 		blendWalls();
 
 
-		player = new Player(new Point(50, 10), this);
+		player = new Player(new Point(400, 150), this);
 		this.add(player, ENTITY_DEPTH);
 
 		gamemenu = new GameMenu();
-		gamemenu.setLocation(WIDTH/2-150,HEIGHT/2-200);
+		//gamemenu.setLocation(new Point(ClientWindow.WIDTH/2-150,ClientWindow.HEIGHT/2-200));
 		this.add(gamemenu, MENU_DEPTH);
+		
+		JPanel bgColor = new JPanel();
+		bgColor.setBackground(new Color(200, 220, 255));
+		bgColor.setSize(ClientWindow.WIDTH, ClientWindow.HEIGHT);
+		this.add(bgColor, BACKGROUND_DEPTH);
 
 		player.pause(false);
 	}
@@ -98,24 +104,38 @@ public class Level extends JLayeredPane{
 	private void blendWalls(){
 		boolean up = false, down = false, left = false, right = false;
 		int x = Wall.COLUMN, y = Wall.ROW;
+		int xpos, ypos;
+		int n_xpos, n_ypos;
 		
 		for(Wall w: wall){
 			up = down = left = right = false;
 			x = Wall.COLUMN;
 			y = Wall.ROW;
+			xpos = w.getLocation().x;
+			ypos = w.getLocation().y;
+			
+			if(ypos + Wall.TILE_HEIGHT >= ClientWindow.HEIGHT)
+				down = true;
+			if(xpos <= 0)
+				left = true;
+			if(xpos + Wall.TILE_WIDTH >= ClientWindow.WIDTH)
+				right = true;
+			
 			for(Wall n: wall){
 				if(w == n) continue;
+				n_xpos = n.getLocation().x;
+				n_ypos = n.getLocation().y;
 				
-				if(w.getLocation().x - Wall.TILE_WIDTH == n.getLocation().x && w.getLocation().y == n.getLocation().y){
+				if((w.type == n.type) && xpos - Wall.TILE_WIDTH == n_xpos && ypos == n_ypos){
 					left = true;
 				}
-				else if(w.getLocation().x + Wall.TILE_WIDTH == n.getLocation().x && w.getLocation().y == n.getLocation().y){
+				else if((w.type == n.type) && xpos + Wall.TILE_WIDTH == n_xpos && ypos == n_ypos){
 					right = true;
 				}
-				else if(w.getLocation().y - Wall.TILE_WIDTH == n.getLocation().y && w.getLocation().x == n.getLocation().x){
+				else if((w.type == n.type) && ypos - Wall.TILE_WIDTH == n_ypos && xpos == n_xpos){
 					up = true;
 				}
-				else if(w.getLocation().y + Wall.TILE_WIDTH == n.getLocation().y && w.getLocation().x == n.getLocation().x){
+				else if(ypos + Wall.TILE_WIDTH == n_ypos && xpos == n_xpos){
 					down = true;
 				}
 			}
@@ -143,11 +163,11 @@ public class Level extends JLayeredPane{
 	public void openGameMenu(boolean b){
 		if(b){
 			player.pause(true);
-			//gamemenu.open(true);
+			gamemenu.open(true);
 			this.revalidate();
 		}
 		else {
-			//gamemenu.open(false);
+			gamemenu.open(false);
 			player.pause(false);
 			this.revalidate();
 		}
