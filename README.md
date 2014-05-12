@@ -113,3 +113,9 @@ You play as a blue, smiling box.
     </td>
   </tr>
 </table>
+
+
+<b>Block Types</b>
+Stone, Wood, Dirt: just a tile.  unremarkable.
+Eye: Eyes don't like being touched.  You won't be able to interact with the wall, but you can wall climb over the top if you've got the momentum.
+Wooden Platform: These allow you to drop through them if you hold the crouch button for a short duration.  Air drop will automatically ignore wooden platforms, so be careful!
