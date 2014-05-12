@@ -12,6 +12,8 @@ import javax.swing.JPanel;
 
 public class Particle extends JPanel{
 	private static final long serialVersionUID = 1L;
+	
+	public final int FRAMERATE = 20;
 
 	public final static int DUST_POOF = 0;
 
@@ -38,6 +40,7 @@ public class Particle extends JPanel{
 		{
 		case DUST_POOF:
 			start = new Point(0,0);
+			//loop = -1;
 			lastframe = 11;
 			break;
 		default:
@@ -72,7 +75,7 @@ public class Particle extends JPanel{
 			}
 
 			try {
-				Thread.sleep(1000/60);
+				Thread.sleep(1000/FRAMERATE);
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}
 		container.remove(this);

@@ -150,7 +150,9 @@ public class Level extends JLayeredPane{
 					printline += "Platform";
 					break;
 				default:
-					printline += "No material";
+					printline += "Material not recognized, using ";
+				case Wall.NONE:
+					printline += "None";
 					break;
 				}
 				System.out.println(printline);

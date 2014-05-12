@@ -83,8 +83,6 @@ public class Wall extends JPanel {
 		}
 		
 		try {
-			if(type == EYE)
-				System.out.println(" " +  x);
 			BufferedImage sprite = ImageIO.read(getClass().getResource("/img/wallsprite2.png")).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(TILE_WIDTH, TILE_HEIGHT, Image.SCALE_SMOOTH)));
 			image.setSize(TILE_WIDTH, TILE_HEIGHT);
