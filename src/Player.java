@@ -57,6 +57,10 @@ public class Player extends JPanel implements KeyListener {
 	private int lastgrabbed = 0; //store which wall was last grabbed, -1 left 1 right
 	private boolean pause = true;
 
+	//Counters for various timers
+	private int frames_to_particle = 0;
+	public int frames_to_dropthrough = -1;
+
 	Thread thread;
 
 
@@ -92,10 +96,10 @@ public class Player extends JPanel implements KeyListener {
 				//Make sure the character is the focused object (for keylistener)
 				if(!this.isFocusOwner())
 					this.requestFocusInWindow();
-				
+
 				//Find boundaries (if in motion)
 				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
-					getBoundaries();
+				getBoundaries();
 
 				if(uncrouch)
 					updateCrouching(false);
@@ -141,6 +145,18 @@ public class Player extends JPanel implements KeyListener {
 					Thread.sleep(1000/60); //60 fps (temp)
 				} catch (InterruptedException e) { }
 
+				if(frames_to_particle > 0)
+					frames_to_particle--;
+
+				if( frames_to_dropthrough != -1){
+					if(frames_to_dropthrough > 0){
+						frames_to_dropthrough--;
+					}
+				} 
+				else if( frames_to_dropthrough != -1 ) {
+					frames_to_dropthrough = -1;
+				}
+
 				//System.out.println(this.getLocation());
 			}
 		}
@@ -155,7 +171,7 @@ public class Player extends JPanel implements KeyListener {
 	private void loadImage(String path, int w, int h){
 		this.removeAll();
 		java.net.URL imgURL = getClass().getResource(path);
-		
+
 		try {
 			BufferedImage bi = ImageIO.read(imgURL);
 			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
@@ -181,8 +197,7 @@ public class Player extends JPanel implements KeyListener {
 			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
 			crouching = true;
-			if(boundary[DOWN].dropthrough)
-				this.setLocation(this.getLocation().x, this.getLocation().y+1);
+			frames_to_dropthrough = 10;
 		}
 		else{
 			if(y-NORMALHEIGHT/2 < boundary[UP].value)
@@ -193,11 +208,16 @@ public class Player extends JPanel implements KeyListener {
 			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
 			crouching = false;
 			uncrouch = false;
+			if(!airdrop) frames_to_dropthrough = -1;
 		}
 	}
 	private void performJump(){
 		//Check superjump
 		if(crouching && !airborne){
+			if(horiz_velocity < SLIDECAP && frames_to_particle == 0){
+				container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
+			}
+
 			vert_velocity = (int)(JUMPSPEED * 1.5);
 			doublejump = true;
 			updateCrouching(false);
@@ -207,14 +227,19 @@ public class Player extends JPanel implements KeyListener {
 			vert_velocity = -1 * (int)(VCAP * 6);
 			horiz_velocity = 0;
 			airdrop = true;
+			frames_to_dropthrough = 0;
 		}
 		//otherwise
 		else if(!airborne || !doublejump){
 			vert_velocity = JUMPSPEED;
 
 			//Check air status
-			if(!airborne)
+			if(!airborne){
+				if(horiz_velocity < SLIDECAP && frames_to_particle == 0){
+					container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
+				}
 				airborne = true;
+			}
 			else{
 				doublejump = true;
 				if(leftwallgrab){
@@ -239,7 +264,7 @@ public class Player extends JPanel implements KeyListener {
 		{
 			int temphcap = HCAP;
 			if(crouching) temphcap /= 2;
-			
+
 			if(horiz_velocity > 0){ //Moving right
 				if(horiz_velocity > temphcap)
 					horiz_velocity = temphcap;
@@ -341,7 +366,7 @@ public class Player extends JPanel implements KeyListener {
 
 			this.setLocation(new Point(boundary[LEFT].value, this.getLocation().y));
 		}
-		
+
 		//Grant Wall Climb
 		else if(rightwallgrab && x + w < boundary[RIGHT].value || leftwallgrab && x > boundary[LEFT].value){
 			if(vert_velocity > 0) //if moving upwards
@@ -361,14 +386,17 @@ public class Player extends JPanel implements KeyListener {
 	}
 	private void checkVerticalCollisions(){
 		if(this.getLocation().y + h - vert_velocity/10 > boundary[DOWN].value){ //hit floor
-			if(vert_velocity < -1 * SLIDECAP - VDECEL)
+			if(vert_velocity < -1 * SLIDECAP - VDECEL){
 				container.addParticle(Particle.DUST_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
+				//frames_to_particle = 5;
+			}
 			vert_velocity = 0;
 			doublejump = false;
 			airborne = false;
 			airdrop = false;
 			leftwallgrab = rightwallgrab = false;
 			lastgrabbed = 0;
+			frames_to_dropthrough = -1;
 
 			this.setLocation(new Point(this.getX(), boundary[DOWN].value - h));
 		}
@@ -399,7 +427,7 @@ public class Player extends JPanel implements KeyListener {
 			if(Configs.isJumpKey(key)){
 				performJump();
 			}
-			
+
 			if(Configs.isCrouchKey(key) && !crouching){
 				updateCrouching(true);
 			}

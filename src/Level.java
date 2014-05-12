@@ -283,7 +283,7 @@ public class Level extends JLayeredPane{
 		for(int i = botleft.y; i < wall[botleft.x].length; i++){
 			if((wall[botleft.x][i] != null && wall[botleft.x][i].type == Wall.PLATFORM) && (wall[botright.x][i] != null && wall[botright.x][i].type == Wall.PLATFORM))
 			{
-				if(o.crouching)
+				if(o.crouching && o.frames_to_dropthrough == 0)
 					continue;
 				bounds[DOWN].dropthrough = true;
 			}
