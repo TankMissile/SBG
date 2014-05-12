@@ -20,6 +20,7 @@ public class Level extends JLayeredPane{
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
 	private final String WALL_CODE = "wa",
+		BACKGROUND_CODE = "bg",
 		STONE_CODE = "st",
 		DIRT_CODE = "dr",
 		WOOD_CODE = "wd",
@@ -28,10 +29,11 @@ public class Level extends JLayeredPane{
 		PLAYER_CODE = "pl";
 
 	private Wall[][] wall;
+	private Wall[][] background;
 	private Player player;
 	private GameMenu gamemenu;
 
-	public static final int BACKGROUND_DEPTH = 10000, WALL_DEPTH = 200, ENTITY_DEPTH = 100, PARTICLE_DEPTH = 1, MENU_DEPTH = 0;
+	public static final int BACKGROUND_DEPTH = -20000, BGWALL_DEPTH = -10000, WALL_DEPTH = 0, ENTITY_DEPTH = 0, PARTICLE_DEPTH = 0, MENU_DEPTH = 1000;
 
 	public Level(){
 		this.setBackground(Color.white);
@@ -54,6 +56,7 @@ public class Level extends JLayeredPane{
 			int x, y, t;
 			
 			wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
+			background = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 
 			System.out.println("Loading Level...");
 			while((readline = br.readLine()) != null){
@@ -81,16 +84,44 @@ public class Level extends JLayeredPane{
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], WALL_DEPTH);
 				}
+				if(splitline[0].equals(BACKGROUND_CODE)){
+					System.out.println("read a background");
+					x = Integer.parseInt(splitline[2]);
+					y = Integer.parseInt(splitline[3]);
+					t = Wall.NONE;
+					if(splitline[1].equals(STONE_CODE)){
+						t = Wall.STONE;
+					}
+					else if(splitline[1].equals(DIRT_CODE)){
+						t = Wall.DIRT;
+					}
+					else if(splitline[1].equals(WOOD_CODE)){
+						t = Wall.WOOD;
+					}
+					else if(splitline[1].equals(EYE_CODE)){
+						t = Wall.EYE;
+					}
+					else if(splitline[1].equals(PLATFORM_CODE)){
+						t = Wall.PLATFORM;
+					}
+					background[x][y] = new Wall(x, y, t, Wall.BACKGROUND_WALL);
+					this.add(background[x][y], BGWALL_DEPTH);
+				}
 				else if(splitline[0].equals(PLAYER_CODE)){
 					System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
 					
 					player = new Player(new Point(x, y), this);
-					this.add(player, ENTITY_DEPTH);
+					this.add(player, ENTITY_DEPTH, 0);
 					System.out.println("Complete.");
 				}
 			}
+			
+			
+			System.out.println("Drawing background...");
+			drawBackground();
+			System.out.println("Complete.");
 			
 			System.out.println("Drawing Textures...");
 			blendWalls();
@@ -224,6 +255,133 @@ public class Level extends JLayeredPane{
 			}
 		}
 	}
+	//Draw the background
+	private void drawBackground(){
+		boolean up = false, down = false, left = false, right = false;
+		int x = Wall.COLUMN, y = Wall.ROW;
+		int xpos, ypos;
+
+		for(int i = 0; i < background.length; i++){
+			for(int j = 0; j < background[i].length; j++){
+				Wall w = background[i][j];
+				if(w == null) {
+					//System.out.println("Tile blank - ignoring...");
+					continue; //ignore blank spaces
+				}
+
+				String printline = "Drawing Tile " + i + " " + j + " : ";
+				switch(w.type){
+				case Wall.STONE:
+					printline += "Stone";
+					break;
+				case Wall.DIRT:
+					printline += "Dirt";
+					break;
+				case Wall.WOOD:
+					printline += "Wood";
+					break;
+				case Wall.EYE:
+					printline += "Eye";
+					break;
+				case Wall.PLATFORM:
+					printline += "Platform";
+					break;
+				default:
+					printline += "Material not recognized, using ";
+				case Wall.NONE:
+					printline += "None";
+					break;
+				}
+				System.out.println(printline);
+
+				up = down = left = right = false;
+				x = Wall.COLUMN;
+				y = Wall.ROW;
+				xpos = w.getLocation().x;
+				ypos = w.getLocation().y;
+
+				//set blend for tiles on the level's border
+				if(ypos <= 0)
+					up = true;
+				if(ypos + Wall.TILE_HEIGHT >= ClientWindow.HEIGHT)
+					down = true;
+				if(xpos <= 0)
+					left = true;
+				if(xpos + Wall.TILE_WIDTH >= ClientWindow.WIDTH)
+					right = true;
+
+				//check background walls
+				if(i - 1 >= 0 && background[i-1][j] != null){
+					if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type)
+						if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type)
+							left = true;
+				}
+				if(i + 1 < background.length && background[i+1][j] != null && (w.type != Wall.DIRT || background[i+1][j].type == w.type)){
+					if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type)
+						if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type)
+							right = true;
+				}
+				if(j - 1 >= 0 && background[i][j-1] != null && ( w.type != Wall.DIRT || background[i][j-1].type == w.type)){
+					if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE)
+						up = true;
+				}
+				if(j + 1 < background[i].length && background[i][j+1] != null){
+					if(w.type != Wall.EYE || background[i][j+1].type == Wall.EYE)
+						down = true;
+				}
+				
+				//check normal walls
+				if(i - 1 >= 0 && wall[i-1][j] != null){
+					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type)
+						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type)
+							left = true;
+				}
+				if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){
+					if((w.type != Wall.DIRT && wall[i+1][j].type != Wall.DIRT) || wall[i+1][j].type == w.type)
+						if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)
+							right = true;
+				}
+				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){
+					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE)
+						up = true;
+				}
+				if(j + 1 < wall[i].length && wall[i][j+1] != null){
+					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE)
+						down = true;
+				}
+
+				if(w.type == Wall.PLATFORM){
+					y = Wall.TOP;
+				}
+				else if(up && down){
+					y = Wall.MID;
+				}
+				else if(up){
+					y = Wall.BOT;
+				}
+				else if(down){
+					w.hangable = true;
+					y = Wall.TOP;
+				}
+				else {
+					w.hangable = true;
+				}
+
+				if(left && right){
+					x = Wall.MID;
+				}
+				else if(left){
+					x = Wall.RIGHT;
+				}
+				else if(right){
+					x = Wall.LEFT;
+				}
+
+
+				w.loadTileBackground(x, y);
+			}
+		}
+	}
 
 	//Open or close the in-game menu
 	public void openGameMenu(boolean b){
@@ -243,7 +401,7 @@ public class Level extends JLayeredPane{
 	public void addParticle(int effect, int x, int y){
 		Particle p = new Particle(effect, x, y, this);
 		p.setSize(Particle.TILE_WIDTH, Particle.TILE_WIDTH);
-		this.add(p, PARTICLE_DEPTH);
+		this.add(p, PARTICLE_DEPTH, 0);
 	}
 
 	//Find the movement boundaries for the player by checking each wall
@@ -371,6 +529,38 @@ public class Level extends JLayeredPane{
 					writeline = WALL_CODE;
 					
 					switch(wall[i][j].type){
+					case Wall.STONE:
+						writeline += " " + STONE_CODE;
+						break;
+					case Wall.DIRT:
+						writeline += " " + DIRT_CODE;
+						break;
+					case Wall.WOOD:
+						writeline += " " + WOOD_CODE;
+						break;
+					case Wall.EYE:
+						writeline += " " + EYE_CODE;
+						break;
+					case Wall.PLATFORM:
+						writeline += " " + PLATFORM_CODE;
+						break;
+					default:
+						System.err.println("Invalid tile at: " + i + ", " + j);
+						continue;
+					}
+					writeline += " " + i + " " + j;
+					bw.write(writeline);
+					bw.newLine();
+				}
+			}
+			
+			for(int i = 0; i < background.length; i++ ){
+				for(int j = 0; j < background[i].length; j++){
+					if(background[i][j] == null) continue; //skip empty spaces
+					
+					writeline = BACKGROUND_CODE;
+					
+					switch(background[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
 						break;

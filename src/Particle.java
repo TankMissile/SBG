@@ -26,7 +26,7 @@ public class Particle extends JPanel{
 	private int loop = 0;
 	private int loopframe = 0;
 
-	private String filename = "effectsprite";
+	private String filename = "effectsprite2";
 	
 	private Level container;
 

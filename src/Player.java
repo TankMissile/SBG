@@ -192,6 +192,7 @@ public class Player extends JPanel implements KeyListener {
 	}
 	private void updateCrouching(boolean c){
 		if(c){
+			this.removeAll();
 			h = NORMALHEIGHT/2;
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,h);
@@ -202,6 +203,8 @@ public class Player extends JPanel implements KeyListener {
 		else{
 			if(y-NORMALHEIGHT/2 < boundary[UP].value)
 				return;
+
+			this.removeAll();
 			h = NORMALHEIGHT;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
 			this.setSize(w,h);
@@ -214,7 +217,7 @@ public class Player extends JPanel implements KeyListener {
 	private void performJump(){
 		//Check superjump
 		if(crouching && !airborne){
-			if(horiz_velocity < SLIDECAP && frames_to_particle == 0){
+			if(frames_to_particle == 0){
 				container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 			}
 

@@ -37,8 +37,24 @@ public class Wall extends JPanel {
 	public boolean slidable = false;
 	public boolean hangable = false;
 	public boolean dropthrough = false;
+	
+
+	public int tile_type = 0;
+	public static final int
+		WALL = 0,
+		BACKGROUND_WALL = 1;
 
 	public Wall(int x, int y, int t){
+		type = t;
+		this.setVisible(true);
+		this.setBounds(x*TILE_WIDTH,y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+		//loadTileBackground(3,3);
+		this.setFocusable(false);
+		this.setLayout(null);
+	}
+	
+	public Wall(int x, int y, int t, int wt){
+		tile_type = wt;
 		type = t;
 		this.setVisible(true);
 		this.setBounds(x*TILE_WIDTH,y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
@@ -51,6 +67,17 @@ public class Wall extends JPanel {
 	public void loadTileBackground(int x, int y){
 		this.removeAll();
 		this.setOpaque(false);
+		
+		String path = null;
+		
+		switch(tile_type){
+		case WALL:
+			path = "/img/wallsprite2.png";
+			break;
+		case BACKGROUND_WALL:
+			path = "/img/wallsprite.png";
+			break;
+		}
 		
 		//get the correct sprite zone for the material
 		switch(type)
@@ -66,11 +93,13 @@ public class Wall extends JPanel {
 			x +=4; //move to next horizontal section from top
 			break;
 		case EYE:
+			slidable = false;
 			if(x == LEFT)
 				x = 8;
 			else if(x == RIGHT)
 				x = 9;
-			slidable = false;
+			else 
+				slidable = true;
 			break;
 		case PLATFORM:
 			y +=8;
@@ -83,7 +112,7 @@ public class Wall extends JPanel {
 		}
 		
 		try {
-			BufferedImage sprite = ImageIO.read(getClass().getResource("/img/wallsprite2.png")).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+			BufferedImage sprite = ImageIO.read(getClass().getResource(path)).getSubimage(x*TILE_WIDTH, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(TILE_WIDTH, TILE_HEIGHT, Image.SCALE_SMOOTH)));
 			image.setSize(TILE_WIDTH, TILE_HEIGHT);
 			this.add(image);
