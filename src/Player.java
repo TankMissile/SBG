@@ -1,18 +1,10 @@
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 
-public class Player extends JPanel implements KeyListener {
+public class Player extends Entity implements KeyListener {
 	private static final long serialVersionUID = 1L;
 
 	//The parent window
@@ -33,29 +25,15 @@ public class Player extends JPanel implements KeyListener {
 	public static final int NORMALWIDTH = 32;
 	private final boolean RESIZE_CROUCH = true; //Controls whether to rescale the image when crouching
 
-	//Boundaries for movement
-	private Boundary boundary[] = new Boundary[4]; //0 up 1 down 2 left 3 right
-	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
-
-	//Bounds of character
-	private int x = 0;
-	private int y = 0;
-	public int w = NORMALWIDTH;
-	public int h = NORMALHEIGHT;
-
 	//Action variables
 	private boolean moveright = false;
 	private boolean moveleft = false;
-	private int vert_velocity = 0;
-	private int horiz_velocity = 0;
 	private boolean doublejump = false;
-	private boolean airborne = true;
 	public boolean crouching = false;
 	private boolean uncrouch = false;
 	public boolean airdrop = true;
 	private boolean rightwallgrab, leftwallgrab = false;
 	private int lastgrabbed = 0; //store which wall was last grabbed, -1 left 1 right
-	private boolean pause = true;
 
 	//Counters for various timers
 	private int frames_to_particle = 0;
@@ -63,10 +41,12 @@ public class Player extends JPanel implements KeyListener {
 
 	Thread thread;
 
-
 	//Constructor
 	public Player(Point p, Level l){
 		container = l;
+		
+		w = NORMALWIDTH;
+		h = NORMALHEIGHT;
 
 		boundary[UP] = new Boundary(0);
 		boundary[DOWN] = new Boundary(460);
@@ -167,20 +147,7 @@ public class Player extends JPanel implements KeyListener {
 		pause = b;
 	}
 
-	//Image Handling
-	private void loadImage(String path, int w, int h){
-		this.removeAll();
-		java.net.URL imgURL = getClass().getResource(path);
-
-		try {
-			BufferedImage bi = ImageIO.read(imgURL);
-			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
-			image.setSize(w, h);
-			this.add(image);
-			this.revalidate();
-			this.repaint();
-		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
-	}
+	
 
 
 	//Position and size functions
