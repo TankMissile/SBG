@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -22,29 +20,18 @@ public class Level extends JLayeredPane{
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
 	private final String WALL_CODE = "wa",
-			BACKGROUND_CODE = "bg",
-			STONE_CODE = "st",
-			DIRT_CODE = "dr",
-			WOOD_CODE = "wd",
-			EYE_CODE = "ey",
-			PLATFORM_CODE = "pt",
-			ENTITY_CODE = "en",
-			SPIKE_CODE = "sp",
-			PLAYER_CODE = "pl";
+		BACKGROUND_CODE = "bg",
+		STONE_CODE = "st",
+		DIRT_CODE = "dr",
+		WOOD_CODE = "wd",
+		EYE_CODE = "ey",
+		PLATFORM_CODE = "pt",
+		PLAYER_CODE = "pl";
 
 	private Wall[][] wall;
 	private Wall[][] background;
-	private ArrayList<Entity> entity = new ArrayList<Entity>();
-	Iterator<Entity> entityIterator;
-	private ArrayList<Particle> particle = new ArrayList<Particle>();
-	private ArrayList<Particle> particlesToAdd = new ArrayList<Particle>();
-	Iterator<Particle> particleIterator;
 	private Player player;
 	private GameMenu gamemenu;
-
-	private Thread thread;
-	public boolean pause = true;
-	private int TIME_PER_STEP;
 
 	public static final int BACKGROUND_DEPTH = -20000, BGWALL_DEPTH = -10000, WALL_DEPTH = 0, ENTITY_DEPTH = 0, PARTICLE_DEPTH = 0, MENU_DEPTH = 1000;
 
@@ -53,91 +40,28 @@ public class Level extends JLayeredPane{
 		this.setPreferredSize(new Dimension(ClientWindow.WIDTH,ClientWindow.HEIGHT));
 		this.setLayout(null);
 		this.setVisible(true);
-		thread = new Thread(new Runnable(){ @Override public void run(){ animateLevel(); }  });
-		thread.start();
-	}
-
-	//Thread for game animations
-	private void animateLevel(){
-		boolean kill = false;
-		Particle p;
-		boolean somethingRemoved = false;
-		long lastStep = System.currentTimeMillis(), timeSinceLast, curTime;
-		while(!kill){
-			if(!pause){
-				//Only run this iteration if it has been the right amount of time
-				curTime = System.currentTimeMillis();
-				timeSinceLast = curTime - lastStep;
-				if(timeSinceLast < TIME_PER_STEP) continue;
-				lastStep = curTime + timeSinceLast - TIME_PER_STEP;
-				
-				
-				//System.out.println("Level not paused");
-				
-				//if((timeElapsed - player.lastUpdate) > player.framerate){
-				player.animate();
-				
-				//Add particles that need to be added
-				particleIterator = particlesToAdd.iterator();
-				while (particleIterator.hasNext()) {
-					p = particleIterator.next();
-					if(!p.animate()){
-						particle.add(p);
-						this.add(p);
-						particleIterator.remove();
-					}
-				}
-				
-				particleIterator = particle.iterator();
-				while (particleIterator.hasNext()) {
-					if(!particleIterator.next().animate()){
-						particleIterator.remove();
-						somethingRemoved = true;
-					}
-				}
-
-				entityIterator = entity.iterator();
-				while (entityIterator.hasNext()) {
-					if(!entityIterator.next().animate()){
-						entityIterator.remove();
-						somethingRemoved = true;
-					}
-				}
-			}
-			
-			if(somethingRemoved) {
-				System.gc();
-				somethingRemoved = false;
-			}
-			//Sleep to save unused CPU
-			/*try {
-				Thread.sleep(1000/60);
-			} catch (InterruptedException e) { e.printStackTrace(); }*/
-		}
 	}
 
 	//Load a level
 	public void loadLevel(String path){
 		this.removeAll();
-
+		
 		try {
 			InputStream istream = getClass().getResourceAsStream("/level/"+path+".lvl");
-
+			
 			BufferedReader br = new BufferedReader(new InputStreamReader(istream));
 			String readline = null;
 			String[] splitline;
-
+			
 			int x, y, t;
-
-			Entity newEntity = null;
-
+			
 			wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 			background = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 
 			System.out.println("Loading Level...");
 			while((readline = br.readLine()) != null){
 				splitline = readline.split(" ");
-
+				
 				if(splitline[0].equals(WALL_CODE)){
 					x = Integer.parseInt(splitline[2]);
 					y = Integer.parseInt(splitline[3]);
@@ -187,36 +111,24 @@ public class Level extends JLayeredPane{
 					System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
-
+					
 					player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
 					System.out.println("Complete.");
 				}
-				else if(splitline[0].equals(ENTITY_CODE)){
-					System.out.println("Adding entity...");
-					if(splitline[1].equals(SPIKE_CODE))
-						newEntity = new SpikeTrap(Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
-
-					if(newEntity != null){
-						entity.add(newEntity);
-						this.add(newEntity);
-					}
-
-					else System.err.println("Error - entity not loaded");
-				}
 			}
-
-
+			
+			
 			System.out.println("Drawing background...");
 			drawBackground();
 			System.out.println("Complete.");
-
+			
 			System.out.println("Drawing Textures...");
 			blendWalls();
 			System.out.println("Complete.");
-
+			
 			System.out.println("Level Loaded.");
-
+			
 		} 
 		catch (UnsupportedEncodingException e) { e.printStackTrace(); } 
 		catch (IOException e) { e.printStackTrace(); }
@@ -417,7 +329,7 @@ public class Level extends JLayeredPane{
 					if(w.type != Wall.EYE || background[i][j+1].type == Wall.EYE)
 						down = true;
 				}
-
+				
 				//check normal walls
 				if(i - 1 >= 0 && wall[i-1][j] != null){
 					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type)
@@ -489,25 +401,7 @@ public class Level extends JLayeredPane{
 	public void addParticle(int effect, int x, int y){
 		Particle p = new Particle(effect, x, y, this);
 		p.setSize(Particle.TILE_WIDTH, Particle.TILE_WIDTH);
-		//this.add(p, PARTICLE_DEPTH, 0);
-		particlesToAdd.add(p);
-		System.out.println("Partice added to queue");
-	}
-	
-	public void removeParticle(Particle p){
-		particle.remove(p);
-		this.remove(p);
-		System.out.println("" + particle.size());
-	}
-	
-	public void addEntity(Entity e){
-		entity.add(e);
-		this.add(e);
-	}
-	
-	public void removeEntity(Entity e){
-		entity.remove(e);
-		this.remove(e);
+		this.add(p, PARTICLE_DEPTH, 0);
 	}
 
 	//Find the movement boundaries for the player by checking each wall
@@ -631,9 +525,9 @@ public class Level extends JLayeredPane{
 			for(int i = 0; i < wall.length; i++ ){
 				for(int j = 0; j < wall[i].length; j++){
 					if(wall[i][j] == null) continue; //skip empty spaces
-
+					
 					writeline = WALL_CODE;
-
+					
 					switch(wall[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -659,13 +553,13 @@ public class Level extends JLayeredPane{
 					bw.newLine();
 				}
 			}
-
+			
 			for(int i = 0; i < background.length; i++ ){
 				for(int j = 0; j < background[i].length; j++){
 					if(background[i][j] == null) continue; //skip empty spaces
-
+					
 					writeline = BACKGROUND_CODE;
-
+					
 					switch(background[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -691,11 +585,11 @@ public class Level extends JLayeredPane{
 					bw.newLine();
 				}
 			}
-
+			
 			writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 			bw.write(writeline);
-
-
+			
+			
 			bw.flush();
 			bw.close();
 		} catch (IOException e) { e.printStackTrace(); }

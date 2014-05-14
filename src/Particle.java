@@ -13,9 +13,7 @@ import javax.swing.JPanel;
 public class Particle extends JPanel{
 	private static final long serialVersionUID = 1L;
 	
-	//Framerate
-	public int frame_buffer = 0;
-	public int nextUpdate = 0;
+	private int framerate = 20;
 
 	public final static int DUST_POOF = 0,
 			JUMP_POOF = 1;
@@ -43,13 +41,15 @@ public class Particle extends JPanel{
 		{
 		case DUST_POOF:
 			start = new Point(0,0);
-			frame_buffer = 3;
+			framerate = 20;
+			//loop = -1;
 			lastframe = 11;
 			break;
 		case JUMP_POOF:
 			start = new Point(0,1);
+			//loop = 5;
 			lastframe = 12;
-			frame_buffer = 1;
+			framerate = 45;
 			break;
 		default:
 			System.err.println("Particle created with non-particle value");
@@ -60,9 +60,9 @@ public class Particle extends JPanel{
 			@Override public void run() { animate(); } }).start();
 	}
 
-	//Return false to delete the particle
-	public boolean animate(){
-		if(nextUpdate == 0){
+	private void animate(){
+		boolean kill = false;
+		while(!kill){
 			loadImage();
 			container.revalidate();
 			container.repaint();
@@ -79,15 +79,14 @@ public class Particle extends JPanel{
 				frame = loopframe;
 			}
 			else{
-				return false;
+				kill = true;
 			}
-			nextUpdate = frame_buffer;
+
+			try {
+				Thread.sleep(1000/framerate);
+			} catch (InterruptedException e) {e.printStackTrace();}
 		}
-		else{
-			nextUpdate--;
-		}
-		
-		return true;
+		container.remove(this);
 	}
 
 	private void loadImage(){
