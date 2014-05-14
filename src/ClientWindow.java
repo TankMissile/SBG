@@ -23,12 +23,13 @@ public class ClientWindow extends JFrame{
 
 		level = new Level();
 		this.setContentPane(level);
-		//this.pack();
 
 		loadLevel("test");
 		
 		this.revalidate();
 		this.pack();
+		
+		level.pause = false;
 	}
 
 	//Load a game level

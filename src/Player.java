@@ -28,6 +28,7 @@ public class Player extends Entity implements KeyListener {
 	//Action variables
 	private boolean moveright = false;
 	private boolean moveleft = false;
+	private boolean performJump;
 	private boolean doublejump = false;
 	public boolean crouching = false;
 	private boolean uncrouch = false;
@@ -41,10 +42,15 @@ public class Player extends Entity implements KeyListener {
 
 	Thread thread;
 
+
 	//Constructor
 	public Player(Point p, Level l){
+		super();
+
+		this.framerate = 60;
+
 		container = l;
-		
+
 		w = NORMALWIDTH;
 		h = NORMALHEIGHT;
 
@@ -54,92 +60,86 @@ public class Player extends Entity implements KeyListener {
 		boundary[RIGHT] = new Boundary(640);
 
 		this.setPreferredSize(new Dimension(w, h));
-		this.setVisible(true);
-		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
+
+		this.img_path = "/img/gameicon.png";
+		loadImage(img_path, NORMALWIDTH, NORMALHEIGHT);
+
 		this.addKeyListener(this);
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
-		this.setOpaque(false);
-		this.setLayout(null);
 
-		thread = new Thread(new Runnable(){ @Override public void run(){ animate(); } });
-		thread.start();
+		//thread = new Thread(new Runnable(){ @Override public void run(){ animate(); } });
+		//thread.start();
 	}
 
 
 	//Thread
-	private void animate(){
-		boolean kill = false;
-		while(!kill){
-			if(!pause)
-			{
-				//Make sure the character is the focused object (for keylistener)
-				if(!this.isFocusOwner())
-					this.requestFocusInWindow();
+	@Override
+	public boolean animate(){
+		//Make sure the character is the focused object (for keylistener)
+		if(!this.isFocusOwner())
+			this.requestFocusInWindow();
 
-				//Find boundaries (if in motion)
-				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
-				getBoundaries();
+		//Find boundaries (if in motion)
+		//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
+		getBoundaries();
+		
+		if(performJump)
+			performJump();
 
-				if(uncrouch)
-					updateCrouching(false);
+		if(uncrouch)
+			updateCrouching(false);
 
-				//Reset position and size variables
-				setLocationVars();
+		//Reset position and size variables
+		setLocationVars();
 
-				if( y+h < boundary[DOWN].value) //if not on the ground
-					airborne = true;
+		if( y+h < boundary[DOWN].value) //if not on the ground
+			airborne = true;
 
-				//Increase velocity
-				if(!airborne){
-					if(moveright)
-						horiz_velocity += ACCEL;
-					if(moveleft)
-						horiz_velocity -= ACCEL;
-				}
-				else {
-					if(moveright){
-						if(leftwallgrab) leftwallgrab = false; //let go of the wall
-						horiz_velocity += AIR_ACCEL;
-					}
-					else if(moveleft){
-						if(rightwallgrab) rightwallgrab = false; //let go of the wall
-						horiz_velocity -= AIR_ACCEL;
-					}
-				}
-
-				//Determine acceleration (both horizontal and vertical)
-				getAcceleration();
-
-				//check for collisions
-				checkHorizontalCollisions();
-				checkVerticalCollisions();
-
-				//Reset position and size variables (may have changed above)
-				setLocationVars();
-
-				//Move the player character
-				this.setBounds(x + horiz_velocity/10, this.getLocation().y - vert_velocity/10, w, h);
-
-				try {
-					Thread.sleep(1000/60); //60 fps (temp)
-				} catch (InterruptedException e) { }
-
-				if(frames_to_particle > 0)
-					frames_to_particle--;
-
-				if( frames_to_dropthrough != -1){
-					if(frames_to_dropthrough > 0){
-						frames_to_dropthrough--;
-					}
-				} 
-				else if( frames_to_dropthrough != -1 ) {
-					frames_to_dropthrough = -1;
-				}
-
-				//System.out.println(this.getLocation());
+		//Increase velocity
+		if(!airborne){
+			if(moveright)
+				horiz_velocity += ACCEL;
+			if(moveleft)
+				horiz_velocity -= ACCEL;
+		}
+		else {
+			if(moveright){
+				if(leftwallgrab) leftwallgrab = false; //let go of the wall
+				horiz_velocity += AIR_ACCEL;
+			}
+			else if(moveleft){
+				if(rightwallgrab) rightwallgrab = false; //let go of the wall
+				horiz_velocity -= AIR_ACCEL;
 			}
 		}
+
+		//Determine acceleration (both horizontal and vertical)
+		getAcceleration();
+
+		//check for collisions
+		checkHorizontalCollisions();
+		checkVerticalCollisions();
+
+		//Reset position and size variables (may have changed above)
+		setLocationVars();
+
+		//Move the player character
+		this.setBounds(x + horiz_velocity/10, this.getLocation().y - vert_velocity/10, w, h);
+
+		if(frames_to_particle > 0)
+			frames_to_particle--;
+
+		if( frames_to_dropthrough != -1){
+			if(frames_to_dropthrough > 0){
+				frames_to_dropthrough--;
+			}
+		} 
+		else if( frames_to_dropthrough != -1 ) {
+			frames_to_dropthrough = -1;
+		}
+
+		return true;
 	}
 
 	//Pause running (or resume, if false)
@@ -147,7 +147,7 @@ public class Player extends Entity implements KeyListener {
 		pause = b;
 	}
 
-	
+
 
 
 	//Position and size functions
@@ -159,34 +159,37 @@ public class Player extends Entity implements KeyListener {
 	}
 	private void updateCrouching(boolean c){
 		if(c){
-			this.removeAll();
 			h = NORMALHEIGHT/2;
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
+			if(RESIZE_CROUCH) {
+				this.removeAll();
+				loadImage(img_path, NORMALWIDTH, NORMALHEIGHT/2);
+			}
 			crouching = true;
 			frames_to_dropthrough = 10;
 		}
 		else{
 			if(y-NORMALHEIGHT/2 < boundary[UP].value)
 				return;
-
-			this.removeAll();
 			h = NORMALHEIGHT;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
 			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
+			if(RESIZE_CROUCH) {
+				this.removeAll();
+				loadImage(img_path, NORMALWIDTH, NORMALHEIGHT);
+			}
 			crouching = false;
 			uncrouch = false;
 			if(!airdrop) frames_to_dropthrough = -1;
 		}
 	}
 	private void performJump(){
+		performJump = false;
+		
 		//Check superjump
 		if(crouching && !airborne){
-			if(frames_to_particle == 0){
-				container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
-			}
+			container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 
 			vert_velocity = (int)(JUMPSPEED * 1.5);
 			doublejump = true;
@@ -395,7 +398,8 @@ public class Player extends Entity implements KeyListener {
 
 			//Check for jumps
 			if(Configs.isJumpKey(key)){
-				performJump();
+				performJump = true; 
+				//performJump();
 			}
 
 			if(Configs.isCrouchKey(key) && !crouching){
