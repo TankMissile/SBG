@@ -4,7 +4,8 @@ SBG
 A Simple Box Game
 
 
-You play as a blue, smiling box.
+You play as a blue, smiling box.<br />
+<img src=https://github.com/TankMissile/SBG/blob/master/res/img/gameicon.png?raw=true>
 
 <b>(Default) Controls:</b><br />
 <table>
@@ -127,15 +128,20 @@ You play as a blue, smiling box.
 </tr>
 <tr>
   <td>
-    Stone, Wood, Dirt
+    Stone, Wood, Dirt<br />
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/stone_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/wood_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/dirt_icon.png?raw=true"></span>
   </td>
   <td>
-    just a tile.  unremarkable.
+    Just a tile.  Unremarkable.
   </td>
 </tr>
 <tr>
   <td>
-    Eye
+    Eye<br />
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/eye_left_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/eye_right_icon.png?raw=true"></span>
   </td>
   <td>
     Eyes don't like being touched.  You won't be able to interact with the wall, but you can wall climb over the top if you've got the momentum.
@@ -143,10 +149,42 @@ You play as a blue, smiling box.
 </tr>
 <tr>
   <td>
-    Wooden Platform:
+    Wooden Platform<br />
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/platform_icon.png?raw=true"></span>
   </td>
   <td>
     These allow you to drop through them if you hold the crouch button for a short duration.  Air drop will automatically ignore wooden platforms, so be careful!
+  </td>
+</tr>
+</table>
+
+<b>Bad things:</b>
+<table>
+<tr>
+  <th width="200px">
+    Name
+  </th>
+  <th>
+    Activity
+  </th>
+</tr>
+<tr>
+  <td>
+    Spike Trap<br />
+    <img src="https://github.com/TankMissile/SBG/blob/master/res/img/spike.png?raw=true">
+  </td>
+  <td>
+    Stationary - They just sit and wait for some poor idiot to chance upon them.  Lord have mercy on they that do.
+  </td>
+</tr>
+<tr>
+  <td>
+    Mr. Chief<br />
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/mr_chief.png?raw=true"></span>
+    <img src="https://github.com/TankMissile/SBG/blob/master/res/img/mr_chief_angry.png?raw=true">
+  </td>
+  <td>
+    Always up to no good, this dastardly fellow may try anything to stop you on your quest!
   </td>
 </tr>
 </table>
