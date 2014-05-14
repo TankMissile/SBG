@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -12,6 +13,7 @@ public class Entity extends JPanel{
 	private static final long serialVersionUID = 1L;
 	
 	protected int maxhealth, health;
+	protected int invincibility = 0;
 	
 	protected int x = 0;
 	protected int y = 0;
@@ -32,15 +34,30 @@ public class Entity extends JPanel{
 	
 	protected int damage;
 	private JLabel image;
+	protected String img_path;
 	
 	public Entity(){
+		this.setPreferredSize(new Dimension(w, h));
+		this.setVisible(true);
+		this.setOpaque(false);
+		this.setLayout(null);
+	}
+	
+	public Entity checkCollision(Entity e){
+		if(e.getVisibleRect().intersects(this.getVisibleRect()))
+			return this;
+		
+		return null;
+	}
+	
+	public void animate(){
+		
 	}
 
 	//Image Handling
 	protected void loadImage(String path, int w, int h){
 		this.removeAll();
 		java.net.URL imgURL = getClass().getResource(path);
-		System.out.println("Attempting image redraw...");
 
 		try {
 			BufferedImage bi = ImageIO.read(imgURL);
@@ -49,7 +66,7 @@ public class Entity extends JPanel{
 			this.add(image);
 			this.revalidate();
 			this.repaint();
-			System.out.println("Redraw succeeded: " + w + " " + h + " Entity size: " + this.getWidth() + " " + this.getHeight());
+			if(w != this.getWidth() || h != this.getHeight()) System.out.println("Redraw failed: " + w + " " + h + " Entity size: " + this.getWidth() + " " + this.getHeight());
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 	}
 

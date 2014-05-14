@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -26,11 +28,15 @@ public class Level extends JLayeredPane{
 		WOOD_CODE = "wd",
 		EYE_CODE = "ey",
 		PLATFORM_CODE = "pt",
-		PLAYER_CODE = "pl";
+		PLAYER_CODE = "pl",
+		ENTITY_CODE = "en",
+		SPIKE_CODE = "sp";
 
 	private Wall[][] wall;
 	private Wall[][] background;
+	private ArrayList<Entity> entity = new ArrayList<Entity>();
 	private Player player;
+	private HealthBar healthbar;
 	private GameMenu gamemenu;
 
 	public static final int BACKGROUND_DEPTH = -20000, BGWALL_DEPTH = -10000, WALL_DEPTH = 0, ENTITY_DEPTH = 0, PARTICLE_DEPTH = 0, MENU_DEPTH = 1000;
@@ -54,6 +60,8 @@ public class Level extends JLayeredPane{
 			String[] splitline;
 			
 			int x, y, t;
+			
+			Entity newEntity = null;
 			
 			wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 			background = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
@@ -116,6 +124,15 @@ public class Level extends JLayeredPane{
 					this.add(player, ENTITY_DEPTH, 0);
 					System.out.println("Complete.");
 				}
+				else if(splitline[0].equals(ENTITY_CODE)){
+					System.out.println("Adding entity: " + splitline[1]);
+					
+					if(splitline[1].equals(SPIKE_CODE)){
+						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
+						entity.add(newEntity);
+						this.add(newEntity, ENTITY_DEPTH, 1 );
+					}
+				}
 			}
 			
 			
@@ -146,9 +163,40 @@ public class Level extends JLayeredPane{
 		System.out.println("Complete.");
 
 		//saveLevel(path);
+		healthbar  = new HealthBar();
+		this.add(healthbar, MENU_DEPTH, 0);
+		
+		player.linkHealthBar(healthbar);
 
 		player.pause(false);
 	}
+	
+	//Remove an Entity
+	public void removeEntity(Entity e){
+		entity.remove(e);
+		this.remove(e);
+	}
+	
+	//Check entity collision
+	public Entity checkCollision(Entity e1){
+		Rectangle e1rect = e1.getVisibleRect();
+		e1rect.setLocation(e1.getLocation());
+		Rectangle e2rect;
+		for(Entity e2: entity){
+			if(e1 == e2) continue; //don't check if it hit itself
+			
+			e2rect = e2.getVisibleRect();
+			e2rect.setLocation(e2.getLocation());
+			
+			if(e1rect.intersects(e2rect)){
+				//System.out.println("" + e1rect + "\nCollided with: " + e2rect + "\n");
+				return e2;
+			}
+		}
+		
+		return null;
+	}
+	
 	//Make the walls blend together
 	private void blendWalls(){
 		boolean up = false, down = false, left = false, right = false;

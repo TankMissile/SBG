@@ -1,4 +1,3 @@
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -6,9 +5,12 @@ import java.awt.event.KeyListener;
 
 public class Player extends Entity implements KeyListener {
 	private static final long serialVersionUID = 1L;
-
+	
 	//The parent window
 	private Level container;
+	
+	//The health bar
+	private HealthBar healthbar;
 
 	//Movement caps
 	private final int VCAP = 120; //max fall speed
@@ -43,7 +45,12 @@ public class Player extends Entity implements KeyListener {
 
 	//Constructor
 	public Player(Point p, Level l){
+		super();
+		
 		container = l;
+		
+		img_path = "/img/gameicon.png";
+		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
 		
 		w = NORMALWIDTH;
 		h = NORMALHEIGHT;
@@ -52,15 +59,10 @@ public class Player extends Entity implements KeyListener {
 		boundary[DOWN] = new Boundary(460);
 		boundary[LEFT] = new Boundary(0);
 		boundary[RIGHT] = new Boundary(640);
-
-		this.setPreferredSize(new Dimension(w, h));
-		this.setVisible(true);
-		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
+		
 		this.addKeyListener(this);
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
-		this.setOpaque(false);
-		this.setLayout(null);
 
 		thread = new Thread(new Runnable(){ @Override public void run(){ animate(); } });
 		thread.start();
@@ -68,8 +70,10 @@ public class Player extends Entity implements KeyListener {
 
 
 	//Thread
-	private void animate(){
+	@Override
+	public void animate(){
 		boolean kill = false;
+		Entity collidedWith = null;
 		while(!kill){
 			if(!pause)
 			{
@@ -80,7 +84,22 @@ public class Player extends Entity implements KeyListener {
 				//Find boundaries (if in motion)
 				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
 				getBoundaries();
-
+				
+				//Check if the player is in contact with any entities, and if so, take whatever damage they deal
+				if(invincibility == 0){
+					collidedWith = container.checkCollision(this);
+					if(invincibility == 0 && collidedWith != null){
+						System.out.println("SBG: \"Ow!\"");
+						healthbar.changeHealth(-1 * collidedWith.damage);
+						invincibility = 60;
+						horiz_velocity *= -1;
+						vert_velocity = JUMPSPEED/2;
+					}
+				}
+				else if(invincibility > 0)
+					invincibility--;
+				
+				//If the user has released the crouch button, check if there's enough room to do so
 				if(uncrouch)
 					updateCrouching(false);
 
@@ -146,9 +165,11 @@ public class Player extends Entity implements KeyListener {
 	public void pause(boolean b){
 		pause = b;
 	}
-
 	
-
+	//Link the player to his health bar
+	public void linkHealthBar(HealthBar h){
+		healthbar = h;
+	}
 
 	//Position and size functions
 	private void setLocationVars(){
@@ -228,8 +249,8 @@ public class Player extends Entity implements KeyListener {
 			}
 		}
 	}
+	//Cap velocity / decelerate
 	private void getAcceleration(){
-		//Cap velocity / decelerate
 		if(!airborne) //Ground Acceleration
 		{
 			int temphcap = HCAP;
