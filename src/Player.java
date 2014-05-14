@@ -5,10 +5,10 @@ import java.awt.event.KeyListener;
 
 public class Player extends Entity implements KeyListener {
 	private static final long serialVersionUID = 1L;
-	
+
 	//The parent window
 	private Level container;
-	
+
 	//The health bar
 	private HealthBar healthbar;
 
@@ -46,12 +46,12 @@ public class Player extends Entity implements KeyListener {
 	//Constructor
 	public Player(Point p, Level l){
 		super();
-		
+
 		container = l;
-		
-		img_path = "/img/gameicon.png";
-		loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
-		
+
+		img_path = "/img/player.png";
+		loadImage(img_path, NORMALWIDTH, NORMALHEIGHT);
+
 		w = NORMALWIDTH;
 		h = NORMALHEIGHT;
 
@@ -59,7 +59,7 @@ public class Player extends Entity implements KeyListener {
 		boundary[DOWN] = new Boundary(460);
 		boundary[LEFT] = new Boundary(0);
 		boundary[RIGHT] = new Boundary(640);
-		
+
 		this.addKeyListener(this);
 		this.setSize(w, h);
 		this.setLocation(new Point(x = p.x, y = p.y));
@@ -84,7 +84,7 @@ public class Player extends Entity implements KeyListener {
 				//Find boundaries (if in motion)
 				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
 				getBoundaries();
-				
+
 				//Check if the player is in contact with any entities, and if so, take whatever damage they deal
 				if(invincibility == 0){
 					collidedWith = container.checkCollision(this);
@@ -94,11 +94,39 @@ public class Player extends Entity implements KeyListener {
 						invincibility = 60;
 						horiz_velocity *= -1;
 						vert_velocity = JUMPSPEED/2;
+						hurt = true;
+						flash_timer = FLASH_DELAY;
 					}
 				}
-				else if(invincibility > 0)
+				else if(invincibility > 0){
 					invincibility--;
-				
+					if(invincibility == 0 && hurt){
+						hurt = false;
+						if(healthbar.health > 2)
+							img_path = "/img/player.png";
+						else
+							img_path = "/img/player_sad.png";
+						loadImage(img_path, w, h);
+					}
+				}
+
+				//Update image while in pain
+				if(hurt){
+					if(flash_timer >= FLASH_DELAY && img_path != "/img/player_hurt.png"){
+						img_path = "/img/player_hurt.png";
+						flash_timer = 0;
+						loadImage(img_path, w, h);
+					}
+					else if(flash_timer >= FLASH_DELAY && img_path != "/img/player_sad.png"){
+						img_path = "/img/player_sad.png";
+						flash_timer = 0;
+						loadImage(img_path, w, h);
+					}
+					else {
+						flash_timer++;
+					}
+				}
+
 				//If the user has released the crouch button, check if there's enough room to do so
 				if(uncrouch)
 					updateCrouching(false);
@@ -165,7 +193,7 @@ public class Player extends Entity implements KeyListener {
 	public void pause(boolean b){
 		pause = b;
 	}
-	
+
 	//Link the player to his health bar
 	public void linkHealthBar(HealthBar h){
 		healthbar = h;
@@ -184,7 +212,7 @@ public class Player extends Entity implements KeyListener {
 			h = NORMALHEIGHT/2;
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT/2);
+			if(RESIZE_CROUCH) loadImage(img_path, w, h);
 			crouching = true;
 			frames_to_dropthrough = 10;
 		}
@@ -193,10 +221,10 @@ public class Player extends Entity implements KeyListener {
 				return;
 
 			this.removeAll();
-			h = NORMALHEIGHT;
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
+			h = NORMALHEIGHT;
 			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage("/img/gameicon.png", NORMALWIDTH, NORMALHEIGHT);
+			if(RESIZE_CROUCH) loadImage(img_path, w, h);
 			crouching = false;
 			uncrouch = false;
 			if(!airdrop) frames_to_dropthrough = -1;

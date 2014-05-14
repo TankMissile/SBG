@@ -1,14 +1,10 @@
 pl 10 3
 bg dr 12 15
 bg dr 12 16
--bg dr 13 11
--bg dr 13 12
--bg dr 13 13
 bg dr 13 14
 bg dr 13 15
 bg dr 13 16
 bg dr 13 17
--bg dr 14 11
 bg dr 14 12
 bg dr 14 13
 bg dr 14 14
@@ -39,7 +35,6 @@ bg st 18 6
 bg st 18 7
 bg st 18 8
 bg st 18 9
--bg wd 19 0
 bg wd 19 1
 bg wd 19 2
 bg wd 19 3
@@ -49,7 +44,6 @@ bg st 19 6
 bg st 19 7
 bg st 19 8
 bg st 19 9
--bg wd 20 0
 bg wd 20 1
 bg wd 20 2
 bg wd 20 3
@@ -59,7 +53,6 @@ bg st 20 6
 bg st 20 7
 bg st 20 8
 bg st 20 9
--bg wd 21 0
 bg wd 21 1
 bg wd 21 2
 bg wd 21 3
@@ -69,7 +62,6 @@ bg st 21 6
 bg st 21 7
 bg st 21 8
 bg st 21 9
--bg wd 22 0
 bg wd 22 1
 bg wd 22 2
 bg wd 22 3
@@ -79,7 +71,6 @@ bg st 22 6
 bg st 22 7
 bg st 22 8
 bg st 22 9
--bg wd 23 0
 bg wd 23 1
 bg wd 23 2
 bg wd 23 3
@@ -100,6 +91,7 @@ bg st 24 9
 wa st 0 10
 wa pt 0 15
 wa dr 0 17
+en sp 1 2 0
 wa st 1 3
 wa pt 1 15
 wa dr 1 17

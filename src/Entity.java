@@ -14,6 +14,9 @@ public class Entity extends JPanel{
 	
 	protected int maxhealth, health;
 	protected int invincibility = 0;
+	protected boolean hurt = false;
+	protected int flash_timer = 0;
+	protected final int FLASH_DELAY = 10;
 	
 	protected int x = 0;
 	protected int y = 0;
