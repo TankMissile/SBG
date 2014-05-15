@@ -21,7 +21,8 @@ public class Level extends JLayeredPane{
 	private static final long serialVersionUID = 1L;
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
-	private final String WALL_CODE = "wa",
+	public static final String WALL_CODE = "wa",
+		PASSABLE_WALL_CODE = "pw",
 		BACKGROUND_CODE = "bg",
 		STONE_CODE = "st",
 		DIRT_CODE = "dr",
@@ -30,16 +31,18 @@ public class Level extends JLayeredPane{
 		PLATFORM_CODE = "pt",
 		PLAYER_CODE = "pl",
 		ENTITY_CODE = "en",
-		SPIKE_CODE = "sp";
+		SPIKE_CODE = "sp",
+		WATER_CODE = "wt";
 
 	private Wall[][] wall;
 	private Wall[][] background;
 	private ArrayList<Entity> entity = new ArrayList<Entity>();
+	private ArrayList<Entity> fluids = new ArrayList<Entity>();
 	private Player player;
 	private HealthBar healthbar;
 	private GameMenu gamemenu;
 
-	public static final int BACKGROUND_DEPTH = -20000, BGWALL_DEPTH = -10000, WALL_DEPTH = 0, ENTITY_DEPTH = 0, PARTICLE_DEPTH = 0, MENU_DEPTH = 1000;
+	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
 	public Level(){
 		this.setBackground(Color.white);
@@ -70,6 +73,7 @@ public class Level extends JLayeredPane{
 			while((readline = br.readLine()) != null){
 				splitline = readline.split(" ");
 				
+				//Non-Passable walls
 				if(splitline[0].equals(WALL_CODE)){
 					x = Integer.parseInt(splitline[2]);
 					y = Integer.parseInt(splitline[3]);
@@ -86,14 +90,22 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(EYE_CODE)){
 						t = Wall.EYE;
 					}
-					else if(splitline[1].equals(PLATFORM_CODE)){
-						t = Wall.PLATFORM;
-					}
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], WALL_DEPTH);
 				}
-				if(splitline[0].equals(BACKGROUND_CODE)){
-					System.out.println("read a background");
+				//Passable Walls
+				else if(splitline[0].equals(PASSABLE_WALL_CODE)){
+					x = Integer.parseInt(splitline[2]);
+					y = Integer.parseInt(splitline[3]);
+					t = Wall.NONE;
+					if(splitline[1].equals(PLATFORM_CODE)){
+						t = Wall.PLATFORM;
+					}
+					wall[x][y] = new Wall(x, y, t);
+					this.add(wall[x][y], PASSABLE_WALL_DEPTH);
+				}
+				//Backgrounds
+				else if(splitline[0].equals(BACKGROUND_CODE)){
 					x = Integer.parseInt(splitline[2]);
 					y = Integer.parseInt(splitline[3]);
 					t = Wall.NONE;
@@ -115,6 +127,7 @@ public class Level extends JLayeredPane{
 					background[x][y] = new Wall(x, y, t, Wall.BACKGROUND_WALL);
 					this.add(background[x][y], BGWALL_DEPTH);
 				}
+				//The Player
 				else if(splitline[0].equals(PLAYER_CODE)){
 					System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
@@ -124,6 +137,7 @@ public class Level extends JLayeredPane{
 					this.add(player, ENTITY_DEPTH, 0);
 					System.out.println("Complete.");
 				}
+				//Non-player Entities
 				else if(splitline[0].equals(ENTITY_CODE)){
 					System.out.println("Adding entity: " + splitline[1]);
 					
@@ -131,6 +145,11 @@ public class Level extends JLayeredPane{
 						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
 						entity.add(newEntity);
 						this.add(newEntity, ENTITY_DEPTH, 1 );
+					}
+					else if(splitline[1].equals(WATER_CODE)){
+						newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
+						fluids.add(newEntity);
+						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
 			}
@@ -196,6 +215,26 @@ public class Level extends JLayeredPane{
 		
 		return null;
 	}
+	
+	//Check fluid collision
+		public Entity checkFluidCollision(Entity e1){
+			Rectangle e1rect = e1.getVisibleRect();
+			e1rect.setLocation(e1.getLocation());
+			Rectangle e2rect;
+			for(Entity e2: fluids){
+				if(e1 == e2) continue; //don't check if it hit itself
+				
+				e2rect = e2.getVisibleRect();
+				e2rect.setLocation(e2.getLocation());
+				
+				if(e1rect.intersects(e2rect)){
+					//System.out.println("" + e1rect + "\nCollided with: " + e2rect + "\n");
+					return e2;
+				}
+			}
+			
+			return null;
+		}
 	
 	//Make the walls blend together
 	private void blendWalls(){
@@ -317,7 +356,7 @@ public class Level extends JLayeredPane{
 					continue; //ignore blank spaces
 				}
 
-				String printline = "Drawing Tile " + i + " " + j + " : ";
+				String printline = "Drawing Background Tile " + i + " " + j + " : ";
 				switch(w.type){
 				case Wall.STONE:
 					printline += "Stone";
@@ -530,6 +569,7 @@ public class Level extends JLayeredPane{
 				break;
 			}
 		}
+		if(bounds[LEFT].value == 0) bounds[LEFT].slidable = false;
 
 		//get right boundary
 		for(int i = topright.x; i < wall.length; i++){
@@ -551,6 +591,7 @@ public class Level extends JLayeredPane{
 				break;
 			}
 		}
+		if(bounds[RIGHT].value == ClientWindow.WIDTH) bounds[RIGHT].slidable = false;
 
 		//System.out.println("up: " + bounds[0] + " down: " + bounds[1] + " left: " + bounds[2] + " right:  " + bounds[3]);
 		return bounds;
@@ -558,9 +599,9 @@ public class Level extends JLayeredPane{
 
 	//Save all tiles of the level
 	@SuppressWarnings("unused")
-	private void saveLevel(String path){
+	private void saveLevel(String name){
 		try {
-			File file = new File("res/level/" + path + ".lvl");
+			File file = new File("res/level/" + name + ".lvl");
 			if(!file.exists()){
 				file.createNewFile();
 			}
@@ -590,7 +631,7 @@ public class Level extends JLayeredPane{
 						writeline += " " + EYE_CODE;
 						break;
 					case Wall.PLATFORM:
-						writeline += " " + PLATFORM_CODE;
+						writeline = PASSABLE_WALL_CODE + " " + PLATFORM_CODE;
 						break;
 					default:
 						System.err.println("Invalid tile at: " + i + ", " + j);
@@ -632,6 +673,13 @@ public class Level extends JLayeredPane{
 					bw.write(writeline);
 					bw.newLine();
 				}
+			}
+			
+			for(Entity e : entity){
+				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+				if(e.entity_code == WATER_CODE)
+					writeline += " " + e.w + " " + e.h;
+				bw.write(writeline);
 			}
 			
 			writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);

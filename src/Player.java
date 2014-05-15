@@ -22,6 +22,7 @@ public class Player extends Entity implements KeyListener {
 	private final int AIR_DECEL = 0; //Rate of horizontal deceleration while airborne
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 65; //Initial vertical velocity while jumping
+	private final int WALL_JUMPSPEED = 60;
 
 	public static final int NORMALHEIGHT = 32;
 	public static final int NORMALWIDTH = 32;
@@ -86,11 +87,11 @@ public class Player extends Entity implements KeyListener {
 				getBoundaries();
 
 				//Check if the player is in contact with any entities, and if so, take whatever damage they deal
+				collidedWith = container.checkCollision(this);
 				if(invincibility == 0){
-					collidedWith = container.checkCollision(this);
-					if(invincibility == 0 && collidedWith != null){
+					if(collidedWith != null && collidedWith.damage < 0){
 						System.out.println("SBG: \"Ow!\"");
-						healthbar.changeHealth(-1 * collidedWith.damage);
+						healthbar.changeHealth(collidedWith.damage);
 						invincibility = 60;
 						horiz_velocity *= -1;
 						vert_velocity = JUMPSPEED/2;
@@ -126,6 +127,23 @@ public class Player extends Entity implements KeyListener {
 						flash_timer++;
 					}
 				}
+				
+				//Check for fluids
+				collidedWith = container.checkFluidCollision(this);
+				if(collidedWith != null){
+					if(collidedWith.entity_code == Level.WATER_CODE){
+						this.speed_modifier = collidedWith.speed_modifier;
+						this.speed_cap_modifier = collidedWith.speed_cap_modifier;
+					}
+					this.in_fluid = true;
+					this.doublejump = false;
+					leftwallgrab = rightwallgrab = false;
+				}
+				else {
+					this.in_fluid = false;
+					this.speed_modifier = 1;
+					this.speed_cap_modifier = 1;
+				}
 
 				//If the user has released the crouch button, check if there's enough room to do so
 				if(uncrouch)
@@ -140,18 +158,18 @@ public class Player extends Entity implements KeyListener {
 				//Increase velocity
 				if(!airborne){
 					if(moveright)
-						horiz_velocity += ACCEL;
+						horiz_velocity += ACCEL * speed_modifier;
 					if(moveleft)
-						horiz_velocity -= ACCEL;
+						horiz_velocity -= ACCEL * speed_modifier;
 				}
 				else {
 					if(moveright){
 						if(leftwallgrab) leftwallgrab = false; //let go of the wall
-						horiz_velocity += AIR_ACCEL;
+						horiz_velocity += AIR_ACCEL * speed_modifier;
 					}
 					else if(moveleft){
 						if(rightwallgrab) rightwallgrab = false; //let go of the wall
-						horiz_velocity -= AIR_ACCEL;
+						horiz_velocity -= AIR_ACCEL * speed_modifier;
 					}
 				}
 
@@ -213,6 +231,7 @@ public class Player extends Entity implements KeyListener {
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
 			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage(img_path, w, h);
+			this.repaint();
 			crouching = true;
 			frames_to_dropthrough = 10;
 		}
@@ -225,20 +244,23 @@ public class Player extends Entity implements KeyListener {
 			h = NORMALHEIGHT;
 			this.setSize(w,h);
 			if(RESIZE_CROUCH) loadImage(img_path, w, h);
+			this.repaint();
 			crouching = false;
 			uncrouch = false;
 			if(!airdrop) frames_to_dropthrough = -1;
 		}
 	}
 	private void performJump(){
+		int temphcap = (int) (HCAP * speed_cap_modifier);
+		
 		//Check superjump
 		if(crouching && !airborne){
 			if(frames_to_particle == 0){
 				container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 			}
 
-			vert_velocity = (int)(JUMPSPEED * 1.5);
-			doublejump = true;
+			vert_velocity = (int)(JUMPSPEED * 1.5 * speed_modifier);
+			if(!in_fluid) doublejump = true;
 			updateCrouching(false);
 		}
 		//Check air drop
@@ -250,7 +272,11 @@ public class Player extends Entity implements KeyListener {
 		}
 		//otherwise
 		else if(!airborne || !doublejump){
-			vert_velocity = JUMPSPEED;
+			if(!rightwallgrab && !leftwallgrab)
+				vert_velocity = (int) (JUMPSPEED * speed_modifier);
+			else if (rightwallgrab || leftwallgrab){
+				vert_velocity = (int) (WALL_JUMPSPEED * speed_modifier);
+			}
 
 			//Check air status
 			if(!airborne){
@@ -262,26 +288,32 @@ public class Player extends Entity implements KeyListener {
 			else{
 				doublejump = true;
 				if(leftwallgrab){
-					horiz_velocity = HCAP;
+					horiz_velocity = temphcap;
 					leftwallgrab = false;
 				}
 				else if(rightwallgrab){
-					horiz_velocity = -1 * HCAP;
+					horiz_velocity = -1 * temphcap;
 					rightwallgrab = false;
 				}
 				else
 					if(moveright && !moveleft)
-						horiz_velocity = HCAP;
+						horiz_velocity = temphcap;
 					else if(moveleft)
-						horiz_velocity = -1 * HCAP;
+						horiz_velocity = -1 * temphcap;
 			}
 		}
 	}
 	//Cap velocity / decelerate
 	private void getAcceleration(){
+		int temphcap = (int) (HCAP * speed_cap_modifier);
+		int tempvcap = (int) (VCAP * speed_cap_modifier);
+		if(in_fluid){
+			tempvcap = temphcap;
+		}
+		
+		int tempvdecel = (int) (VDECEL * speed_modifier);
 		if(!airborne) //Ground Acceleration
 		{
-			int temphcap = HCAP;
 			if(crouching) temphcap /= 2;
 
 			if(horiz_velocity > 0){ //Moving right
@@ -299,14 +331,15 @@ public class Player extends Entity implements KeyListener {
 		}
 		else //Air acceleration
 		{
-			if(horiz_velocity > HCAP){ //Moving right
+			
+			if(horiz_velocity > temphcap){ //Moving right
 				horiz_velocity -= DECEL;
 			}
 			else if(horiz_velocity > 0)
 			{
 				horiz_velocity -= AIR_DECEL;
 			}
-			else if(horiz_velocity < -1 * HCAP){ //Moving left
+			else if(horiz_velocity < -1 * temphcap){ //Moving left
 				horiz_velocity += DECEL;
 			}
 			else if(horiz_velocity < 0)
@@ -317,23 +350,28 @@ public class Player extends Entity implements KeyListener {
 
 		//Cap fall velocity
 		if(airborne){
-			int tempvcap = VCAP;
-			int tempvdecel = VDECEL;
 			if(leftwallgrab || rightwallgrab){
 				tempvdecel /= 2;
-				if(!crouching)
-					tempvcap = SLIDECAP;
-				else
-					tempvcap = SLIDECAP*2;
+				if(!crouching){
+					tempvcap = (int) (SLIDECAP * speed_cap_modifier);
+					if(tempvcap == 0) tempvcap = 2;
+				}
+				else{
+					tempvcap = (int) (SLIDECAP * 2 * speed_cap_modifier);
+					if (tempvcap == 0) tempvcap = 1;
+				}
 			}
 			if(airdrop)
-				tempvcap = VCAP * 6;
+				if(!in_fluid) tempvcap = VCAP * 6;
+				else {
+					airdrop = false;
+				}
 
 			if(vert_velocity > -1 * tempvcap){ //If not falling faster than terminal velocity, accelerate downward
 				vert_velocity -= tempvdecel;
 			}
 			else if(vert_velocity < (-1 * tempvcap)){ //If falling faster than terminal velocity, slow down
-				vert_velocity += tempvdecel;
+				vert_velocity = -1 * tempvcap;
 			}
 		}
 	}
@@ -344,7 +382,7 @@ public class Player extends Entity implements KeyListener {
 		if(x + w + horiz_velocity/10 > boundary[RIGHT].value){ //right wall
 			horiz_velocity = 0;
 
-			if(boundary[RIGHT].slidable && airborne && !rightwallgrab){
+			if(boundary[RIGHT].slidable && airborne && !rightwallgrab && !in_fluid){
 				rightwallgrab = true;
 				if(lastgrabbed <=0){
 					lastgrabbed = 1;
@@ -352,11 +390,11 @@ public class Player extends Entity implements KeyListener {
 
 					//If moving upwards, grant wall run
 					if(vert_velocity > 0 ){
-						vert_velocity = (int)(JUMPSPEED * .7);
+						vert_velocity = (int)(WALL_JUMPSPEED * .7 * speed_modifier);
 					}
 				}
 			}
-			else if(!boundary[RIGHT].slidable){
+			else if(!boundary[RIGHT].slidable || in_fluid){
 				rightwallgrab = false;
 			}
 
@@ -367,7 +405,7 @@ public class Player extends Entity implements KeyListener {
 		else if(x + horiz_velocity/10 < boundary[LEFT].value){ //left wall
 			horiz_velocity = 0;
 
-			if(boundary[LEFT].slidable && airborne && !leftwallgrab){
+			if(boundary[LEFT].slidable && airborne && !leftwallgrab && !in_fluid){
 				leftwallgrab = true;
 				if(lastgrabbed >= 0 ){
 					lastgrabbed = -1;
@@ -375,11 +413,11 @@ public class Player extends Entity implements KeyListener {
 
 					//If moving upwards, grant wall run
 					if(vert_velocity > 0){
-						vert_velocity  = (int)(JUMPSPEED * .7);
+						vert_velocity  = (int)(JUMPSPEED * .7 * speed_modifier);
 					}
 				}
 			}
-			else if(!boundary[LEFT].slidable){
+			else if(!boundary[LEFT].slidable || in_fluid){
 				leftwallgrab = false;
 			}
 

@@ -18,10 +18,16 @@ public class Entity extends JPanel{
 	protected int flash_timer = 0;
 	protected final int FLASH_DELAY = 10;
 	
+	protected double speed_modifier = 1;
+	protected double speed_cap_modifier = 1;
+	protected boolean in_fluid = false;
+	
 	protected int x = 0;
 	protected int y = 0;
 	public int w;
 	public int h;
+	
+	public String entity_code;
 	
 	//Boundaries for movement
 	protected Boundary boundary[] = new Boundary[4]; //0 up 1 down 2 left 3 right
@@ -29,7 +35,6 @@ public class Entity extends JPanel{
 	
 
 	protected boolean airborne = true;
-
 	protected int vert_velocity = 0;
 	protected int horiz_velocity = 0;
 	
@@ -72,5 +77,23 @@ public class Entity extends JPanel{
 			if(w != this.getWidth() || h != this.getHeight()) System.out.println("Redraw failed: " + w + " " + h + " Entity size: " + this.getWidth() + " " + this.getHeight());
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 	}
-
+	protected void loadImage(String path, int w, int h, int x, int y){
+		try {
+			this.removeAll();
+			BufferedImage sprite = ImageIO.read(getClass().getResource(path)).getSubimage((x /*+ frame*/) * Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
+			image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			this.add(image);
+		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
+		return;
+	}
+	protected JLabel loadTileImage(String path, int w, int h, int x, int y){
+		try {
+			BufferedImage sprite = ImageIO.read(getClass().getResource(path)).getSubimage((x /*+ frame*/) * Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
+			image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			return image;
+		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
+		return null;
+	}
 }
