@@ -11,22 +11,25 @@ public class ClientWindow extends JFrame{
 	public static final int HEIGHT = 720;
 
 	public ClientWindow(){
-		this.setResizable(false);
 		this.setTitle("SBG");
+		this.setResizable(false);
 		this.setLocationByPlatform(true);
 		this.setIconImage((new ImageIcon(getClass().getResource("/img/gameicon.png"))).getImage());
-		this.getContentPane().setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
 
+		//Set the default controls or load from a file (not implemented)
 		Configs.init();
 
+		//Create a new instance of level and set it as the content pane
 		level = new Level();
 		this.setContentPane(level);
 		//this.pack();
 
+		//Load the level from a file
 		loadLevel("test");
 		
+		//Make everything visible and resize the window to fit the frame
 		this.revalidate();
 		this.pack();
 	}

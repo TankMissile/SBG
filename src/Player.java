@@ -311,7 +311,7 @@ public class Player extends Entity implements KeyListener {
 			tempvcap = temphcap;
 		}
 		
-		int tempvdecel = (int) (VDECEL * speed_modifier);
+		int tempvdecel = (int) (VDECEL * vert_accel_modifier);
 		if(!airborne) //Ground Acceleration
 		{
 			if(crouching) temphcap /= 2;

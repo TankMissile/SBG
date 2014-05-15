@@ -18,6 +18,7 @@ public class Water extends Entity{
 		
 		speed_modifier = 0.5;
 		speed_cap_modifier = 0.5;
+		vert_accel_modifier = 0.3;
 		
 		entity_code = Level.WATER_CODE;
 		img_path = "/img/fluidsprite.png";

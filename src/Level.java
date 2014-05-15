@@ -22,30 +22,31 @@ public class Level extends JLayeredPane{
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
 	public static final String WALL_CODE = "wa",
-		PASSABLE_WALL_CODE = "pw",
-		BACKGROUND_CODE = "bg",
-		STONE_CODE = "st",
-		DIRT_CODE = "dr",
-		WOOD_CODE = "wd",
-		EYE_CODE = "ey",
-		PLATFORM_CODE = "pt",
-		PLAYER_CODE = "pl",
-		ENTITY_CODE = "en",
-		SPIKE_CODE = "sp",
-		WATER_CODE = "wt";
+			PASSABLE_WALL_CODE = "pw",
+			BACKGROUND_CODE = "bg",
+			STONE_CODE = "st",
+			DIRT_CODE = "dr",
+			WOOD_CODE = "wd",
+			EYE_CODE = "ey",
+			PLATFORM_CODE = "pt",
+			PLAYER_CODE = "pl",
+			ENTITY_CODE = "en",
+			SPIKE_CODE = "sp",
+			WATER_CODE = "wt";
 
-	private Wall[][] wall;
-	private Wall[][] background;
-	private ArrayList<Entity> entity = new ArrayList<Entity>();
-	private ArrayList<Entity> fluids = new ArrayList<Entity>();
-	private Player player;
-	private HealthBar healthbar;
-	private GameMenu gamemenu;
+	private Wall[][] wall; //Stores wall tiles (interact with player)
+	private Wall[][] background; //Stores background tiles (don't interact with player)
+	private ArrayList<Entity> entity = new ArrayList<Entity>(); //Stores all entities other than fluids
+	private ArrayList<Entity> fluids = new ArrayList<Entity>(); //Stores all fluids
+	private Player player; //The player
+	private HealthBar healthbar; //The player's health bar
+	private GameMenu gamemenu; //The pause menu (opened with esc)
 
+	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
+	//Constructor
 	public Level(){
-		this.setBackground(Color.white);
 		this.setPreferredSize(new Dimension(ClientWindow.WIDTH,ClientWindow.HEIGHT));
 		this.setLayout(null);
 		this.setVisible(true);
@@ -53,26 +54,30 @@ public class Level extends JLayeredPane{
 
 	//Load a level
 	public void loadLevel(String path){
-		this.removeAll();
-		
+		this.removeAll(); //Clear everything from the level
+
 		try {
+			//Find the file for reading
 			InputStream istream = getClass().getResourceAsStream("/level/"+path+".lvl");
-			
+
+			//Open the file to read
 			BufferedReader br = new BufferedReader(new InputStreamReader(istream));
-			String readline = null;
-			String[] splitline;
-			
-			int x, y, t;
-			
-			Entity newEntity = null;
-			
+			String readline = null; //reads a line
+			String[] splitline; //Splits the line by spaces
+
+			int x, y, t; //X and Y positions for the component loaded, and the wall material if applicable
+
+			Entity newEntity = null; //Stores a new entity to be loaded
+
+			//Initialize the wall and background arrays to the size of the level
 			wall = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 			background = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 
+			//Begin actual loading
 			System.out.println("Loading Level...");
 			while((readline = br.readLine()) != null){
 				splitline = readline.split(" ");
-				
+
 				//Non-Passable walls
 				if(splitline[0].equals(WALL_CODE)){
 					x = Integer.parseInt(splitline[2]);
@@ -132,7 +137,7 @@ public class Level extends JLayeredPane{
 					System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
-					
+
 					player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
 					System.out.println("Complete.");
@@ -140,7 +145,7 @@ public class Level extends JLayeredPane{
 				//Non-player Entities
 				else if(splitline[0].equals(ENTITY_CODE)){
 					System.out.println("Adding entity: " + splitline[1]);
-					
+
 					if(splitline[1].equals(SPIKE_CODE)){
 						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
 						entity.add(newEntity);
@@ -153,27 +158,30 @@ public class Level extends JLayeredPane{
 					}
 				}
 			}
-			
-			
+
+			//Draw the background
 			System.out.println("Drawing background...");
 			drawBackground();
 			System.out.println("Complete.");
-			
+
+			//Draw walls
 			System.out.println("Drawing Textures...");
 			blendWalls();
 			System.out.println("Complete.");
-			
+
 			System.out.println("Level Loaded.");
-			
+
 		} 
 		catch (UnsupportedEncodingException e) { e.printStackTrace(); } 
 		catch (IOException e) { e.printStackTrace(); }
 
+		//Create Pause menu
 		System.out.println("Creating Pause Menu...");
 		gamemenu = new GameMenu();
 		this.add(gamemenu, MENU_DEPTH);
 		System.out.println("Complete.");
 
+		//Add static background color
 		System.out.println("Adding Background Color...");
 		JPanel bgColor = new JPanel();
 		bgColor.setBackground(new Color(200, 220, 255));
@@ -182,20 +190,24 @@ public class Level extends JLayeredPane{
 		System.out.println("Complete.");
 
 		//saveLevel(path);
+
+		//Create the health bar and add it to screen
 		healthbar  = new HealthBar();
 		this.add(healthbar, MENU_DEPTH, 0);
-		
+
+		//Tell the player what his health bar is
 		player.linkHealthBar(healthbar);
 
+		//Unpause the player
 		player.pause(false);
 	}
-	
+
 	//Remove an Entity
 	public void removeEntity(Entity e){
 		entity.remove(e);
 		this.remove(e);
 	}
-	
+
 	//Check entity collision
 	public Entity checkCollision(Entity e1){
 		Rectangle e1rect = e1.getVisibleRect();
@@ -203,39 +215,39 @@ public class Level extends JLayeredPane{
 		Rectangle e2rect;
 		for(Entity e2: entity){
 			if(e1 == e2) continue; //don't check if it hit itself
-			
+
 			e2rect = e2.getVisibleRect();
 			e2rect.setLocation(e2.getLocation());
-			
+
 			if(e1rect.intersects(e2rect)){
 				//System.out.println("" + e1rect + "\nCollided with: " + e2rect + "\n");
 				return e2;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	//Check fluid collision
-		public Entity checkFluidCollision(Entity e1){
-			Rectangle e1rect = e1.getVisibleRect();
-			e1rect.setLocation(e1.getLocation());
-			Rectangle e2rect;
-			for(Entity e2: fluids){
-				if(e1 == e2) continue; //don't check if it hit itself
-				
-				e2rect = e2.getVisibleRect();
-				e2rect.setLocation(e2.getLocation());
-				
-				if(e1rect.intersects(e2rect)){
-					//System.out.println("" + e1rect + "\nCollided with: " + e2rect + "\n");
-					return e2;
-				}
+	public Entity checkFluidCollision(Entity e1){
+		Rectangle e1rect = e1.getVisibleRect();
+		e1rect.setLocation(e1.getLocation());
+		Rectangle e2rect;
+		for(Entity e2: fluids){
+			if(e1 == e2) continue; //don't check if it hit itself
+
+			e2rect = e2.getVisibleRect();
+			e2rect.setLocation(e2.getLocation());
+
+			if(e1rect.intersects(e2rect)){
+				//System.out.println("" + e1rect + "\nCollided with: " + e2rect + "\n");
+				return e2;
 			}
-			
-			return null;
 		}
-	
+
+		return null;
+	}
+
 	//Make the walls blend together
 	private void blendWalls(){
 		boolean up = false, down = false, left = false, right = false;
@@ -275,9 +287,13 @@ public class Level extends JLayeredPane{
 				}
 				System.out.println(printline);
 
-				up = down = left = right = false;
+				up = down = left = right = false; //whether there's a tile in each direction
+
+				//position in tile array, default to unsurrounded tile
 				x = Wall.COLUMN;
 				y = Wall.ROW;
+
+				//get position of the tile in the level
 				xpos = w.getLocation().x;
 				ypos = w.getLocation().y;
 
@@ -291,25 +307,34 @@ public class Level extends JLayeredPane{
 				if(xpos + Wall.TILE_WIDTH >= ClientWindow.WIDTH)
 					right = true;
 
-				if(i - 1 >= 0 && wall[i-1][j] != null){
-					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type)
-						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type)
+				//Check for a tile on the left
+				if(i - 1 >= 0 && wall[i-1][j] != null){ //If there's a tile there
+					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //If neither tile is dirt or the tiles are both dirt
+						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //If neither tile is a platform or both are platforms
 							left = true;
 				}
-				if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){
-					if((w.type != Wall.DIRT && wall[i+1][j].type != Wall.DIRT) || wall[i+1][j].type == w.type)
+
+				//Check for a tile on the right
+				if(i + 1 < wall.length && wall[i+1][j] != null/* && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)*/){ //if there's a tile there
+					if((w.type != Wall.DIRT && wall[i+1][j].type != Wall.DIRT) || wall[i+1][j].type == w.type) //If neither tile is dirt or the tiles are both dirt
 						if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)
 							right = true;
 				}
-				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){
-					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE)
+
+				//check for a tile above
+				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //If there's a tile there and the current tile is not dirt or they're both dirt
+					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //If the current tile is not eye or they're both eye
 						up = true;
 				}
-				if(j + 1 < wall[i].length && wall[i][j+1] != null){
-					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE)
+
+				//check for a tile below
+				if(j + 1 < wall[i].length && wall[i][j+1] != null){ //If there's a tile there
+					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE) //If the current tile is not eye or they're both eye
 						down = true;
 				}
 
+
+				//Set Vertical type
 				if(w.type == Wall.PLATFORM){
 					y = Wall.TOP;
 				}
@@ -327,6 +352,7 @@ public class Level extends JLayeredPane{
 					w.hangable = true;
 				}
 
+				//Set horizontal type
 				if(left && right){
 					x = Wall.MID;
 				}
@@ -337,17 +363,24 @@ public class Level extends JLayeredPane{
 					x = Wall.LEFT;
 				}
 
-
+				//Load the background for the tile
 				w.loadTileBackground(x, y);
 			}
 		}
 	}
+
 	//Draw the background
 	private void drawBackground(){
+		//whether there's a tile in each direction
 		boolean up = false, down = false, left = false, right = false;
+
+		//Position in tile array
 		int x = Wall.COLUMN, y = Wall.ROW;
+
+		//Position in level
 		int xpos, ypos;
 
+		//For each tile in the level
 		for(int i = 0; i < background.length; i++){
 			for(int j = 0; j < background[i].length; j++){
 				Wall w = background[i][j];
@@ -381,9 +414,14 @@ public class Level extends JLayeredPane{
 				}
 				System.out.println(printline);
 
+				//whether there's a tile in each direction
 				up = down = left = right = false;
+
+				//position in tile array, default to unsurrounded tile
 				x = Wall.COLUMN;
 				y = Wall.ROW;
+
+				//get position of the tile in the level
 				xpos = w.getLocation().x;
 				ypos = w.getLocation().y;
 
@@ -398,45 +436,52 @@ public class Level extends JLayeredPane{
 					right = true;
 
 				//check background walls
-				if(i - 1 >= 0 && background[i-1][j] != null){
-					if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type)
-						if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type)
+				//Check left
+				if(i - 1 >= 0 && background[i-1][j] != null){ //tile exists
+					if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type) //not dirt or both dirt
+						if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type) //not platform or both platform
 							left = true;
 				}
-				if(i + 1 < background.length && background[i+1][j] != null && (w.type != Wall.DIRT || background[i+1][j].type == w.type)){
-					if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type)
-						if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type)
+				//Check right
+				if(i + 1 < background.length && background[i+1][j] != null/* && (w.type != Wall.DIRT || background[i+1][j].type == w.type)*/){ //tile exists
+					if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type) //not dirt or both dirt
+						if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type) //not platform or both platform
 							right = true;
 				}
-				if(j - 1 >= 0 && background[i][j-1] != null && ( w.type != Wall.DIRT || background[i][j-1].type == w.type)){
-					if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE)
+				//Check up
+				if(j - 1 >= 0 && background[i][j-1] != null && ( w.type != Wall.DIRT || background[i][j-1].type == w.type)){ // exists and not dirt or both dirt
+					if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE) //not eye or both eye
 						up = true;
 				}
-				if(j + 1 < background[i].length && background[i][j+1] != null){
-					if(w.type != Wall.EYE || background[i][j+1].type == Wall.EYE)
-						down = true;
-				}
-				
-				//check normal walls
-				if(i - 1 >= 0 && wall[i-1][j] != null){
-					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type)
-						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type)
-							left = true;
-				}
-				if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){
-					if((w.type != Wall.DIRT && wall[i+1][j].type != Wall.DIRT) || wall[i+1][j].type == w.type)
-						if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)
-							right = true;
-				}
-				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){
-					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE)
-						up = true;
-				}
-				if(j + 1 < wall[i].length && wall[i][j+1] != null){
-					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE)
+				//Check down
+				if(j + 1 < background[i].length && background[i][j+1] != null){ //exists
+					if(w.type != Wall.EYE || background[i][j+1].type == Wall.EYE) //not eye or both eye
 						down = true;
 				}
 
+				//check normal walls
+				//Check left
+				if(i - 1 >= 0 && wall[i-1][j] != null){ //exists
+					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //not dirt or both dirt
+						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //not platform or both platform
+							left = true;
+				}
+				//Check right
+				if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){ //exists and not dirt or both dirt
+					if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)  //not platform or both platform
+						right = true;
+				}
+				//Check up
+				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //exists and not dirt or both dirt
+					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
+						up = true;
+				}
+				if(j + 1 < wall[i].length && wall[i][j+1] != null){ //exists
+					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE) //not eye or both eye
+						down = true;
+				}
+
+				//Set vertical type
 				if(w.type == Wall.PLATFORM){
 					y = Wall.TOP;
 				}
@@ -454,6 +499,7 @@ public class Level extends JLayeredPane{
 					w.hangable = true;
 				}
 
+				//Set horizontal type
 				if(left && right){
 					x = Wall.MID;
 				}
@@ -464,7 +510,7 @@ public class Level extends JLayeredPane{
 					x = Wall.LEFT;
 				}
 
-
+				//Load the tile's background
 				w.loadTileBackground(x, y);
 			}
 		}
@@ -499,12 +545,14 @@ public class Level extends JLayeredPane{
 		bounds[LEFT] = new Boundary(0);
 		bounds[RIGHT] = new Boundary(ClientWindow.WIDTH);
 
+		//Get points of each corner of player, in actual coordinates
 		Point topleft, topright, botleft, botright;
 		topleft = o.getLocation();
 		topright = new Point(topleft.x + o.w-1, topleft.y);
 		botleft = new Point(topleft.x, topleft.y + o.h-1);
 		botright = new Point(topleft.x + o.w-1, topleft.y + o.h-1);
 
+		//Convert points to tiled coordinates
 		topleft = new Point((topleft.x - topleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topleft.y - topleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
 		topright = new Point((topright.x - topright.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topright.y - topright.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
 		botleft = new Point((botleft.x - botleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (botleft.y - botleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
@@ -614,9 +662,9 @@ public class Level extends JLayeredPane{
 			for(int i = 0; i < wall.length; i++ ){
 				for(int j = 0; j < wall[i].length; j++){
 					if(wall[i][j] == null) continue; //skip empty spaces
-					
+
 					writeline = WALL_CODE;
-					
+
 					switch(wall[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -642,13 +690,13 @@ public class Level extends JLayeredPane{
 					bw.newLine();
 				}
 			}
-			
+
 			for(int i = 0; i < background.length; i++ ){
 				for(int j = 0; j < background[i].length; j++){
 					if(background[i][j] == null) continue; //skip empty spaces
-					
+
 					writeline = BACKGROUND_CODE;
-					
+
 					switch(background[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -674,18 +722,18 @@ public class Level extends JLayeredPane{
 					bw.newLine();
 				}
 			}
-			
+
 			for(Entity e : entity){
 				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 				if(e.entity_code == WATER_CODE)
 					writeline += " " + e.w + " " + e.h;
 				bw.write(writeline);
 			}
-			
+
 			writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 			bw.write(writeline);
-			
-			
+
+
 			bw.flush();
 			bw.close();
 		} catch (IOException e) { e.printStackTrace(); }

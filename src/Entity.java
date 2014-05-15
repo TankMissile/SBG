@@ -20,6 +20,7 @@ public class Entity extends JPanel{
 	
 	protected double speed_modifier = 1;
 	protected double speed_cap_modifier = 1;
+	protected double vert_accel_modifier = 1;
 	protected boolean in_fluid = false;
 	
 	protected int x = 0;
