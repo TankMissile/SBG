@@ -41,15 +41,17 @@ public class Level extends JLayeredPane{
 	private Player player; //The player
 	private HealthBar healthbar; //The player's health bar
 	private GameMenu gamemenu; //The pause menu (opened with esc)
+	private ClientWindow container;
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
 	//Constructor
-	public Level(){
+	public Level(ClientWindow cw){
 		this.setPreferredSize(new Dimension(ClientWindow.WIDTH,ClientWindow.HEIGHT));
 		this.setLayout(null);
 		this.setVisible(true);
+		this.container = cw;
 	}
 
 	//Load a level
@@ -74,7 +76,8 @@ public class Level extends JLayeredPane{
 			background = new Wall[ClientWindow.WIDTH/Wall.TILE_WIDTH][ClientWindow.HEIGHT/Wall.TILE_HEIGHT];
 
 			//Begin actual loading
-			System.out.println("Loading Level...");
+			//System.out.println("Loading Level...");
+			container.preloader.updateCurrentStatus("Reading Level File");
 			while((readline = br.readLine()) != null){
 				splitline = readline.split(" ");
 
@@ -95,6 +98,7 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(EYE_CODE)){
 						t = Wall.EYE;
 					}
+					container.preloader.updateCurrentStatus("Adding Wall at " + x + " " + y);
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], WALL_DEPTH);
 				}
@@ -108,6 +112,7 @@ public class Level extends JLayeredPane{
 					}
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], PASSABLE_WALL_DEPTH);
+					container.preloader.updateCurrentStatus("Adding Platform at " + x + " " + y);
 				}
 				//Backgrounds
 				else if(splitline[0].equals(BACKGROUND_CODE)){
@@ -131,6 +136,7 @@ public class Level extends JLayeredPane{
 					}
 					background[x][y] = new Wall(x, y, t, Wall.BACKGROUND_WALL);
 					this.add(background[x][y], BGWALL_DEPTH);
+					container.preloader.updateCurrentStatus("Adding Background Tile at " + x + " " + y);
 				}
 				//The Player
 				else if(splitline[0].equals(PLAYER_CODE)){
@@ -140,11 +146,12 @@ public class Level extends JLayeredPane{
 
 					player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
-					System.out.println("Complete.");
+					container.preloader.updateCurrentStatus("Adding Player");
 				}
 				//Non-player Entities
 				else if(splitline[0].equals(ENTITY_CODE)){
-					System.out.println("Adding entity: " + splitline[1]);
+					//System.out.println("Adding entity: " + splitline[1]);
+					container.preloader.updateCurrentStatus("Adding Entity: " + splitline[1]);
 
 					if(splitline[1].equals(SPIKE_CODE)){
 						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
@@ -160,29 +167,34 @@ public class Level extends JLayeredPane{
 			}
 
 			//Draw the background
-			System.out.println("Drawing background...");
+			//System.out.println("Drawing background...");
+			container.preloader.updateOverview("Drawing Background");
 			drawBackground();
-			System.out.println("Complete.");
+			//System.out.println("Complete.");
 
 			//Draw walls
-			System.out.println("Drawing Textures...");
+			//System.out.println("Drawing Textures...");
+			container.preloader.updateOverview("Drawing Walls");
 			blendWalls();
-			System.out.println("Complete.");
+			//System.out.println("Complete.");
 
-			System.out.println("Level Loaded.");
+			//System.out.println("Level Loaded.");
 
 		} 
 		catch (UnsupportedEncodingException e) { e.printStackTrace(); } 
 		catch (IOException e) { e.printStackTrace(); }
 
 		//Create Pause menu
-		System.out.println("Creating Pause Menu...");
+		//System.out.println("Creating Pause Menu...");
+		container.preloader.updateOverview("Finalizing");
+		container.preloader.updateCurrentStatus("Creating pause menu...");
 		gamemenu = new GameMenu();
 		this.add(gamemenu, MENU_DEPTH);
-		System.out.println("Complete.");
+		//System.out.println("Complete.");
 
 		//Add static background color
-		System.out.println("Adding Background Color...");
+		//System.out.println("Adding Background Color...");
+		container.preloader.updateCurrentStatus("Coloring Background");
 		JPanel bgColor = new JPanel();
 		bgColor.setBackground(new Color(200, 220, 255));
 		bgColor.setSize(ClientWindow.WIDTH, ClientWindow.HEIGHT);
@@ -192,6 +204,7 @@ public class Level extends JLayeredPane{
 		//saveLevel(path);
 
 		//Create the health bar and add it to screen
+		container.preloader.updateCurrentStatus("Adding HUD");
 		healthbar  = new HealthBar();
 		this.add(healthbar, MENU_DEPTH, 0);
 
@@ -199,6 +212,8 @@ public class Level extends JLayeredPane{
 		player.linkHealthBar(healthbar);
 
 		//Unpause the player
+		container.preloader.updateOverview("Starting Game");
+		container.preloader.updateCurrentStatus("");
 		player.pause(false);
 	}
 
@@ -285,7 +300,8 @@ public class Level extends JLayeredPane{
 					printline += "None";
 					break;
 				}
-				System.out.println(printline);
+				//System.out.println(printline);
+				container.preloader.updateCurrentStatus(printline);
 
 				up = down = left = right = false; //whether there's a tile in each direction
 
@@ -412,7 +428,8 @@ public class Level extends JLayeredPane{
 					printline += "None";
 					break;
 				}
-				System.out.println(printline);
+				//System.out.println(printline);
+				container.preloader.updateCurrentStatus(printline);
 
 				//whether there's a tile in each direction
 				up = down = left = right = false;

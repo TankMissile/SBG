@@ -12,39 +12,46 @@ import javax.swing.JPanel;
 public class Entity extends JPanel{
 	private static final long serialVersionUID = 1L;
 	
+	//Combat
 	protected int maxhealth, health;
 	protected int invincibility = 0;
+	protected int damage; //How much damage do I deal per hit?
 	protected boolean hurt = false;
-	protected int flash_timer = 0;
-	protected final int FLASH_DELAY = 10;
+	protected int flash_timer = 0; //How long until next damage flash?
+	protected final int FLASH_DELAY = 10; //frames between damage flashes
 	
-	protected double speed_modifier = 1;
-	protected double speed_cap_modifier = 1;
-	protected double vert_accel_modifier = 1;
+	//Modifiers
+	protected double speed_modifier = 1; //Movement speed modifier (incoming for entities, outgoing for fluids)
+	protected double speed_cap_modifier = 1; //Speed cap modifier (incoming for entities, outgoing for fluids)
+	protected double vert_accel_modifier = 1;  //Vertical speed cap modifier (incoming for entities, outgoing for fluids)
 	protected boolean in_fluid = false;
 	
+	//Location and size
 	protected int x = 0;
 	protected int y = 0;
 	public int w;
 	public int h;
 	
+	//~2 characters labeling what type of entity (spike, player, etc)
 	public String entity_code;
 	
 	//Boundaries for movement
 	protected Boundary boundary[] = new Boundary[4]; //0 up 1 down 2 left 3 right
 	protected final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 	
-
+	//Action Variables
 	protected boolean airborne = true;
 	protected int vert_velocity = 0;
 	protected int horiz_velocity = 0;
 	
+	//Pause this entity?
 	protected boolean pause = true;
 	
-	protected int damage;
+	//Image Handling variables
 	private JLabel image;
 	protected String img_path;
 	
+	//Constructor
 	public Entity(){
 		this.setPreferredSize(new Dimension(w, h));
 		this.setVisible(true);
@@ -52,6 +59,7 @@ public class Entity extends JPanel{
 		this.setLayout(null);
 	}
 	
+	//Is this in contact with the given entity?
 	public Entity checkCollision(Entity e){
 		if(e.getVisibleRect().intersects(this.getVisibleRect()))
 			return this;
@@ -59,6 +67,7 @@ public class Entity extends JPanel{
 		return null;
 	}
 	
+	//Thread
 	public void animate(){
 		
 	}

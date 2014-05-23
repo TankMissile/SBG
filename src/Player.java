@@ -224,30 +224,40 @@ public class Player extends Entity implements KeyListener {
 		w = this.getWidth();
 		h = this.getHeight();
 	}
+	
+	//Crouch if true is passed, otherwise check if there's room to uncrouch and perform appropriate action
 	private void updateCrouching(boolean c){
 		if(c){
-			this.removeAll();
-			h = NORMALHEIGHT/2;
-			this.setLocation(new Point(x,y+NORMALHEIGHT/2));
-			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage(img_path, w, h);
-			this.repaint();
-			crouching = true;
-			frames_to_dropthrough = 10;
+			this.removeAll(); //Remove the character's image
+			
+			h = NORMALHEIGHT/2; //keep track of how tall the player is
+			this.setSize(w,h); //resize the player
+			this.setLocation(new Point(x,y+NORMALHEIGHT/2)); //move the player's head down
+			
+			if(RESIZE_CROUCH) loadImage(img_path, w, h); //reskin the player
+			
+			crouching = true; //yep, he's crouching now
+			frames_to_dropthrough = 10; //in 10 frames, activate dropthrough status
+			
+			this.repaint(); //force refresh the panel
 		}
 		else{
-			if(y-NORMALHEIGHT/2 < boundary[UP].value)
+			if(y-NORMALHEIGHT/2 < boundary[UP].value) //If uncrouching would make the player bigger than the space he has available, cancel the action
 				return;
 
-			this.removeAll();
-			this.setLocation(new Point(x, y-NORMALHEIGHT/2));
-			h = NORMALHEIGHT;
-			this.setSize(w,h);
-			if(RESIZE_CROUCH) loadImage(img_path, w, h);
-			this.repaint();
-			crouching = false;
-			uncrouch = false;
-			if(!airdrop) frames_to_dropthrough = -1;
+			this.removeAll(); //Remove the character's image
+			this.setLocation(new Point(x, y-NORMALHEIGHT/2)); //move the player up to allow his resize
+			
+			h = NORMALHEIGHT; //keep track of player's height
+			this.setSize(w,h); //resize player
+			
+			if(RESIZE_CROUCH) loadImage(img_path, w, h); //reskin the player
+			
+			crouching = false; //not crouching
+			uncrouch = false; //no need to uncrouch anymore
+			if(!airdrop) frames_to_dropthrough = -1; //Don't drop through things anymore
+
+			this.repaint(); //force refresh the panel
 		}
 	}
 	private void performJump(){
