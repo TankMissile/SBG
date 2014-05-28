@@ -30,7 +30,7 @@ public class HealthBar extends JPanel{
 		health = maxHealth;
 
 		//changeHealth(-4);
-		System.out.println("Health bar created");
+		//System.out.println("Health bar created");
 		changeMaxHealth(maxHealth);
 	}
 
@@ -52,7 +52,7 @@ public class HealthBar extends JPanel{
 		maxHealth = h;
 		if(health > maxHealth)
 			changeHealth(damageTaken);
-		System.out.println("Max health updated");
+		//System.out.println("Max health updated");
 		updateAppearance();
 	}
 

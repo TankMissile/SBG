@@ -26,7 +26,7 @@ public class Water extends Entity{
 		images = new JLabel[w][h];
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j < h; j++){
-				System.out.println("Adding water tile: " + i + " " + j);
+				//System.out.println("Adding water tile: " + i + " " + j);
 				images[i][j] = loadTileImage(img_path, w, h, 0, 0);
 				if(images[i][j] != null){
 					images[i][j].setLocation(i * Wall.TILE_WIDTH, j * Wall.TILE_HEIGHT);

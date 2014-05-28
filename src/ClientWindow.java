@@ -19,34 +19,32 @@ public class ClientWindow extends JFrame{
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
 		
-		//Create Preloader
-		preloader = new Preloader();
-		this.setContentPane(preloader);
-		this.pack();
-
-		//Set the default controls or load from a file (not implemented)
-		Configs.init();
-
-		//Create a new instance of level and set it as the content pane
-		preloader.updateOverview("Creating Level");
-		level = new Level(this);
-		//this.setContentPane(level);
-		//this.pack();
-
-		//Load the level from a file
 		loadLevel("test");
-		
-		//Make everything visible and resize the window to fit the frame
-		this.setContentPane(level);
-		this.revalidate();
-		this.pack();
 	}
 
 	//Load a game level
 	public void loadLevel(String str){
-		level.loadLevel(str);
+		//Create Preloader
+				preloader = new Preloader();
+				this.setContentPane(preloader);
+				this.pack();
 
-		return;
+				//Set the default controls or load from a file (not implemented)
+				Configs.init();
+
+				//Create a new instance of level and set it as the content pane
+				preloader.updateOverview("Creating Level");
+				level = new Level(this);
+				//this.setContentPane(level);
+				//this.pack();
+
+				//Load the level from a file
+				level.loadLevel(str);
+				
+				//Make everything visible and resize the window to fit the frame
+				this.setContentPane(level);
+				this.revalidate();
+				this.pack();
 	}
 
 	public static void main(String[] args) {

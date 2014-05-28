@@ -140,7 +140,7 @@ public class Level extends JLayeredPane{
 				}
 				//The Player
 				else if(splitline[0].equals(PLAYER_CODE)){
-					System.out.println("Adding Player...");
+					//System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
 
@@ -199,7 +199,7 @@ public class Level extends JLayeredPane{
 		bgColor.setBackground(new Color(200, 220, 255));
 		bgColor.setSize(ClientWindow.WIDTH, ClientWindow.HEIGHT);
 		this.add(bgColor, BACKGROUND_DEPTH);
-		System.out.println("Complete.");
+		//System.out.println("Complete.");
 
 		//saveLevel(path);
 
