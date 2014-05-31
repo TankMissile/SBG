@@ -214,6 +214,9 @@ public class Level extends JLayeredPane{
 		//Unpause the player
 		container.preloader.updateOverview("Starting Game");
 		container.preloader.updateCurrentStatus("");
+		
+		Sound.music("epic_evil");
+		
 		player.pause(false);
 	}
 
