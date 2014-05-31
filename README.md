@@ -4,7 +4,7 @@ SBG
 A Simple Box Game
 
 
-You play as a blue, smiling box.<br />
+You play as a smiling blue guy.<br />
 <img src=https://github.com/TankMissile/SBG/blob/master/res/img/gameicon.png?raw=true>
 
 <b>(Default) Controls:</b><br />
@@ -179,7 +179,7 @@ You play as a blue, smiling box.<br />
 </tr>
 <tr>
   <td>
-    Mr. Chief<br />
+    Sinister Bad Guy<br />
     <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/mr_chief.png?raw=true"></span>
     <img src="https://github.com/TankMissile/SBG/blob/master/res/img/mr_chief_angry.png?raw=true">
   </td>
