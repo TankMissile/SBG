@@ -127,7 +127,7 @@ public class Player extends Entity implements KeyListener {
 						flash_timer++;
 					}
 				}
-				
+
 				//Check for fluids
 				collidedWith = container.checkFluidCollision(this);
 				if(collidedWith != null){
@@ -224,21 +224,21 @@ public class Player extends Entity implements KeyListener {
 		w = this.getWidth();
 		h = this.getHeight();
 	}
-	
+
 	//Crouch if true is passed, otherwise check if there's room to uncrouch and perform appropriate action
 	private void updateCrouching(boolean c){
 		if(c){
 			this.removeAll(); //Remove the character's image
-			
+
 			h = NORMALHEIGHT/2; //keep track of how tall the player is
 			this.setSize(w,h); //resize the player
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2)); //move the player's head down
-			
+
 			if(RESIZE_CROUCH) loadImage(img_path, w, h); //reskin the player
-			
+
 			crouching = true; //yep, he's crouching now
 			frames_to_dropthrough = 10; //in 10 frames, activate dropthrough status
-			
+
 			this.repaint(); //force refresh the panel
 		}
 		else{
@@ -247,12 +247,12 @@ public class Player extends Entity implements KeyListener {
 
 			this.removeAll(); //Remove the character's image
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2)); //move the player up to allow his resize
-			
+
 			h = NORMALHEIGHT; //keep track of player's height
 			this.setSize(w,h); //resize player
-			
+
 			if(RESIZE_CROUCH) loadImage(img_path, w, h); //reskin the player
-			
+
 			crouching = false; //not crouching
 			uncrouch = false; //no need to uncrouch anymore
 			if(!airdrop) frames_to_dropthrough = -1; //Don't drop through things anymore
@@ -262,7 +262,7 @@ public class Player extends Entity implements KeyListener {
 	}
 	private void performJump(){
 		int temphcap = (int) (HCAP * speed_cap_modifier);
-		
+
 		//Check superjump
 		if(crouching && !airborne){
 			if(frames_to_particle == 0){
@@ -279,17 +279,20 @@ public class Player extends Entity implements KeyListener {
 			horiz_velocity = 0;
 			airdrop = true;
 			frames_to_dropthrough = 0;
+			return;
 		}
 		//otherwise
 		else if(!airborne || !doublejump){
-			if(!rightwallgrab && !leftwallgrab)
+			if(!rightwallgrab && !leftwallgrab){
 				vert_velocity = (int) (JUMPSPEED * speed_modifier);
+			}
 			else if (rightwallgrab || leftwallgrab){
 				vert_velocity = (int) (WALL_JUMPSPEED * speed_modifier);
 			}
 
 			//Check air status
 			if(!airborne){
+				//add particle effect
 				if(horiz_velocity < SLIDECAP && frames_to_particle == 0){
 					container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 				}
@@ -310,8 +313,16 @@ public class Player extends Entity implements KeyListener {
 						horiz_velocity = temphcap;
 					else if(moveleft)
 						horiz_velocity = -1 * temphcap;
+
+				//Add particle effect
+				if(frames_to_particle == 0){
+					container.addParticle(Particle.DUST_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, this.y + this.h - Particle.TILE_HEIGHT);
+				}
 			}
 		}
+		else return;
+
+		Sound.sound("bounce");
 	}
 	//Cap velocity / decelerate
 	private void getAcceleration(){
@@ -320,7 +331,7 @@ public class Player extends Entity implements KeyListener {
 		if(in_fluid){
 			tempvcap = temphcap;
 		}
-		
+
 		int tempvdecel = (int) (VDECEL * vert_accel_modifier);
 		if(!airborne) //Ground Acceleration
 		{
@@ -341,7 +352,7 @@ public class Player extends Entity implements KeyListener {
 		}
 		else //Air acceleration
 		{
-			
+
 			if(horiz_velocity > temphcap){ //Moving right
 				horiz_velocity -= DECEL;
 			}

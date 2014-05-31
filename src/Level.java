@@ -32,7 +32,8 @@ public class Level extends JLayeredPane{
 			PLAYER_CODE = "pl",
 			ENTITY_CODE = "en",
 			SPIKE_CODE = "sp",
-			WATER_CODE = "wt";
+			WATER_CODE = "wt",
+			MUSIC_CODE = "mu";
 
 	private Wall[][] wall; //Stores wall tiles (interact with player)
 	private Wall[][] background; //Stores background tiles (don't interact with player)
@@ -57,6 +58,8 @@ public class Level extends JLayeredPane{
 	//Load a level
 	public void loadLevel(String path){
 		this.removeAll(); //Clear everything from the level
+
+		String bgm = null; //Stores the filename of the background music for the level
 
 		try {
 			//Find the file for reading
@@ -164,6 +167,10 @@ public class Level extends JLayeredPane{
 						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
+				//Background Music
+				else if(splitline[0].equals(MUSIC_CODE)){
+					bgm = splitline[1];
+				}
 			}
 
 			//Draw the background
@@ -205,8 +212,10 @@ public class Level extends JLayeredPane{
 
 		//Create the health bar and add it to screen
 		container.preloader.updateCurrentStatus("Adding HUD");
-		healthbar  = new HealthBar();
+		if(healthbar == null)
+			healthbar = new HealthBar();
 		this.add(healthbar, MENU_DEPTH, 0);
+
 
 		//Tell the player what his health bar is
 		player.linkHealthBar(healthbar);
@@ -214,9 +223,10 @@ public class Level extends JLayeredPane{
 		//Unpause the player
 		container.preloader.updateOverview("Starting Game");
 		container.preloader.updateCurrentStatus("");
-		
-		Sound.music("Zipper");
-		
+
+		if(bgm != null)
+			Sound.music(bgm);
+
 		player.pause(false);
 	}
 
