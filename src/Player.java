@@ -202,6 +202,7 @@ public class Player extends Entity implements KeyListener {
 					frames_to_dropthrough = -1;
 				}
 
+				ClientWindow.moveCameraTowardPlayer();
 				//System.out.println(this.getLocation());
 			}
 		}
@@ -228,8 +229,6 @@ public class Player extends Entity implements KeyListener {
 	//Crouch if true is passed, otherwise check if there's room to uncrouch and perform appropriate action
 	private void updateCrouching(boolean c){
 		if(c){
-			this.removeAll(); //Remove the character's image
-
 			h = NORMALHEIGHT/2; //keep track of how tall the player is
 			this.setSize(w,h); //resize the player
 			this.setLocation(new Point(x,y+NORMALHEIGHT/2)); //move the player's head down
@@ -244,8 +243,7 @@ public class Player extends Entity implements KeyListener {
 		else{
 			if(y-NORMALHEIGHT/2 < boundary[UP].value) //If uncrouching would make the player bigger than the space he has available, cancel the action
 				return;
-
-			this.removeAll(); //Remove the character's image
+			
 			this.setLocation(new Point(x, y-NORMALHEIGHT/2)); //move the player up to allow his resize
 
 			h = NORMALHEIGHT; //keep track of player's height
@@ -293,7 +291,7 @@ public class Player extends Entity implements KeyListener {
 			//Check air status
 			if(!airborne){
 				//add particle effect
-				if(horiz_velocity < SLIDECAP && frames_to_particle == 0){
+				if(frames_to_particle == 0){
 					container.addParticle(Particle.JUMP_POOF, this.getX() + this.getWidth()/2 - Particle.TILE_WIDTH/2, boundary[DOWN].value - Particle.TILE_HEIGHT);
 				}
 				airborne = true;

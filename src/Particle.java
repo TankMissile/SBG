@@ -64,8 +64,7 @@ public class Particle extends JPanel{
 		boolean kill = false;
 		while(!kill){
 			loadImage();
-			container.revalidate();
-			container.repaint();
+			this.repaint();
 
 			if(frame < lastframe){
 				frame += 1;

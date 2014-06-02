@@ -80,7 +80,7 @@ public class HealthBar extends JPanel{
 			
 			iconsToAdd--;
 			
-			this.revalidate();
+			//this.revalidate();
 			this.repaint();
 		}
 

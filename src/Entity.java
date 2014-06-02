@@ -82,7 +82,7 @@ public class Entity extends JPanel{
 			image = new JLabel(new ImageIcon(bi.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
 			image.setSize(w, h);
 			this.add(image);
-			this.revalidate();
+			//this.revalidate();
 			this.repaint();
 			if(w != this.getWidth() || h != this.getHeight()) System.out.println("Redraw failed: " + w + " " + h + " Entity size: " + this.getWidth() + " " + this.getHeight());
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }

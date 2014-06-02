@@ -1,14 +1,30 @@
 The format is as follows:
 player:
-pl {xx} {yy}
+pl x y
 
+
+passable wall: (platforms)
+pw pt x y
 wall:
-wa {xx} {yy} {material}
-
-
+wa [material] x y
+backgrond:
+bg [material] x y
 
 material codes:
-no: none (solid color)
 st: stone
-di: dirt
+dr: dirt
 wd: wood
+ey: eye
+
+Entities:
+en [entity code] x y [special attributes ... ]
+
+Entity codes:
+sp: spike
+    sp x y [rotation]
+
+Fluids:
+en [fluid code] x y w h 
+
+fluid codes:
+wt: water
