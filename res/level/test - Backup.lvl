@@ -312,9 +312,6 @@ wa dr 26 14
 wa dr 26 15
 wa dr 26 16
 wa dr 26 17
-wa st 30 15
-wa st 29 30
-wa st 31 23
 en sp 0 16 0
 en sp 1 16 0
 en sp 2 16 0

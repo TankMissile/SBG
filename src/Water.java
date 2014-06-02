@@ -13,7 +13,7 @@ public class Water extends Entity{
 	
 	public Water(int x, int y, int w, int h){
 		this.w = w;
-		this.h = h - TOP_BORDER;
+		this.h = h;
 		this.setBounds(x*Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT + TOP_BORDER, w*Wall.TILE_WIDTH, h*Wall.TILE_HEIGHT);
 		
 		speed_modifier = 0.5;

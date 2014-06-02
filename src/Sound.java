@@ -22,9 +22,6 @@ public class Sound {
 		catch (LineUnavailableException e) { e.printStackTrace(); } 
 		catch (UnsupportedAudioFileException e) { e.printStackTrace(); } 
 		catch (IOException e) { System.err.println("Audio file not found: music/" + name + ".wav"); }
-		finally{
-			System.out.println("Hi");
-		}
 		
 	}
 	

@@ -45,7 +45,6 @@ public class Preloader extends JPanel{
 		pBar.setBackground(Color.WHITE);
 		pBar.setOpaque(true);
 		pBar.setBounds(ClientWindow.WIDTH/4, ClientWindow.HEIGHT/2 - 10, 1, 20);
-		//pBar.setBounds(ClientWindow.WIDTH/4, ClientWindow.HEIGHT/2 - 10, ClientWindow.WIDTH/2, 20);
 		pBar.setVisible(true);
 		this.add(pBar);
 		
@@ -57,6 +56,8 @@ public class Preloader extends JPanel{
 		currentStatus.setBounds(0, ClientWindow.HEIGHT/2 + 30, ClientWindow.WIDTH, 100);
 		currentStatus.setVisible(true);
 		this.add(currentStatus);
+		
+		this.repaint();
 	}
 	
 	public void updateCurrentStatus(String msg){

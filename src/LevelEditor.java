@@ -1,7 +1,10 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,10 +20,8 @@ import javax.swing.JPanel;
 
 
 
-public class Level extends JLayeredPane{
+public class LevelEditor extends JLayeredPane implements KeyListener, MouseListener{
 	private static final long serialVersionUID = 1L;
-
-	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
 	public static final String WALL_CODE = "wa",
 			PASSABLE_WALL_CODE = "pw",
 			BACKGROUND_CODE = "bg",
@@ -35,6 +36,9 @@ public class Level extends JLayeredPane{
 			WATER_CODE = "wt",
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
+	
+	private String currentType;
+	private String currentMaterial;
 
 	public int width, height;
 	private Wall[][] wall; //Stores wall tiles (interact with player)
@@ -51,7 +55,7 @@ public class Level extends JLayeredPane{
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
 	//Constructor
-	public Level(ClientWindow cw){
+	public LevelEditor(ClientWindow cw){
 		this.setLayout(null);
 		this.setVisible(true);
 		this.container = cw;
@@ -70,7 +74,7 @@ public class Level extends JLayeredPane{
 	public void loadLevel(String path){
 		this.removeAll(); //Clear everything from the level
 
-		String bgm = null; //Stores the filename of the background music for the level
+		String bgm = "Just_This_Again"; //Stores the filename of the background music for the level
 
 		try {
 			//Find the file for reading
@@ -170,15 +174,15 @@ public class Level extends JLayeredPane{
 					ClientWindow.preloader.updateCurrentStatus("Adding Background Tile at " + x + " " + y);
 				}
 				//The Player
-				else if(splitline[0].equals(PLAYER_CODE)){
+				/*else if(splitline[0].equals(PLAYER_CODE)){
 					//System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
 
-					player = new Player(new Point(x, y), this);
+					//player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
 					ClientWindow.preloader.updateCurrentStatus("Adding Player");
-				}
+				}*/
 				//Non-player Entities
 				else if(splitline[0].equals(ENTITY_CODE)){
 					//System.out.println("Adding entity: " + splitline[1]);
@@ -195,10 +199,10 @@ public class Level extends JLayeredPane{
 						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
-				//Background Music
+				/*//Background Music
 				else if(splitline[0].equals(MUSIC_CODE)){
 					bgm = splitline[1];
-				}
+				}*/
 			}
 
 			//Draw the background
@@ -227,68 +231,20 @@ public class Level extends JLayeredPane{
 		bgColor.setSize(width, height);
 		this.add(bgColor, BACKGROUND_DEPTH);
 
-		//Create the health bar and add it to screen
-		ClientWindow.preloader.updateCurrentStatus("Adding HUD");
-		//if(healthbar == null)
-		healthbar = new HealthBar();
-		this.add(healthbar, MENU_DEPTH, 0);
-
-
-		//Tell the player what his health bar is
-		player.linkHealthBar(healthbar);
-
 		//Unpause the player
-		ClientWindow.preloader.updateOverview("Starting Game");
+		ClientWindow.preloader.updateOverview("Starting Editor");
 		ClientWindow.preloader.updateCurrentStatus("");
 
 		if(bgm != null)
 			Sound.music(bgm);
-
-		player.pause(false);
+		
+		saveLevel("testCopy");
 	}
 
 	//Remove an Entity
 	public void removeEntity(Entity e){
 		entity.remove(e);
 		this.remove(e);
-	}
-
-	//Check entity collision
-	public Entity checkCollision(Entity e1){
-		Rectangle e1rect = e1.getVisibleRect();
-		e1rect.setLocation(e1.getLocation());
-		Rectangle e2rect;
-		for(Entity e2: entity){
-			if(e1 == e2) continue; //don't check if it hit itself
-
-			e2rect = e2.getVisibleRect();
-			e2rect.setLocation(e2.getLocation());
-
-			if(e1rect.intersects(e2rect)){
-				return e2;
-			}
-		}
-
-		return null;
-	}
-
-	//Check fluid collision
-	public Entity checkFluidCollision(Entity e1){
-		Rectangle e1rect = e1.getVisibleRect();
-		e1rect.setLocation(e1.getLocation());
-		Rectangle e2rect;
-		for(Entity e2: fluids){
-			if(e1 == e2) continue; //don't check if it hit itself
-
-			e2rect = e2.getVisibleRect();
-			e2rect.setLocation(e2.getLocation());
-
-			if(e1rect.intersects(e2rect)){
-				return e2;
-			}
-		}
-
-		return null;
 	}
 
 	//Make the walls blend together
@@ -557,133 +513,7 @@ public class Level extends JLayeredPane{
 		}
 	}
 
-	//Open or close the in-game menu
-	public void openGameMenu(boolean b){
-		if(b){
-			player.pause(true);
-			gamemenu.open(true);
-			this.revalidate();
-		}
-		else {
-			gamemenu.open(false);
-			player.pause(false);
-			this.revalidate();
-		}
-	}
-
-	//Add a particle with a given effect to the scene
-	public void addParticle(int effect, int x, int y){
-		Particle p = new Particle(effect, x, y, this);
-		p.setSize(Particle.TILE_WIDTH, Particle.TILE_WIDTH);
-		this.add(p, PARTICLE_DEPTH, 0);
-	}
-
-	//Find the movement boundaries for the player by checking each wall
-	public Boundary[] findBoundaries(Player o){
-		Boundary[] bounds = new Boundary[4];
-		bounds[UP] = new Boundary(0);
-		bounds[DOWN] = new Boundary(height);
-		bounds[LEFT] = new Boundary(0);
-		bounds[RIGHT] = new Boundary(width);
-
-		//Get points of each corner of player, in actual coordinates
-		Point topleft, topright, botleft, botright;
-		topleft = o.getLocation();
-		topright = new Point(topleft.x + o.w-1, topleft.y);
-		botleft = new Point(topleft.x, topleft.y + o.h-1);
-		botright = new Point(topleft.x + o.w-1, topleft.y + o.h-1);
-
-		//Convert points to tiled coordinates
-		topleft = new Point((topleft.x - topleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topleft.y - topleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
-		topright = new Point((topright.x - topright.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topright.y - topright.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
-		botleft = new Point((botleft.x - botleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (botleft.y - botleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
-		botright = new Point((botright.x - botright.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (botright.y - botright.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
-
-		//get upper boundary
-		for(int i = topleft.y; i >= 0; i--){
-			if(wall[topleft.x][i] != null && wall[topleft.x][i].type != Wall.PLATFORM){
-				bounds[UP].value = wall[topleft.x][i].getLocation().y + Wall.TILE_HEIGHT;
-				break;
-			}
-			if(wall[topright.x][i] != null && wall[topright.x][i].type != Wall.PLATFORM){
-				bounds[UP].value = wall[topright.x][i].getLocation().y + Wall.TILE_HEIGHT;
-				break;
-			}
-		}
-
-		//get lower boundary
-		for(int i = botleft.y; i < wall[botleft.x].length; i++){
-			if((wall[botleft.x][i] != null && wall[botleft.x][i].type == Wall.PLATFORM) && (wall[botright.x][i] != null && wall[botright.x][i].type == Wall.PLATFORM))
-			{
-				if(o.crouching && o.frames_to_dropthrough == 0)
-					continue;
-				bounds[DOWN].dropthrough = true;
-			}
-			else
-				bounds[DOWN].dropthrough = false;
-
-			if(wall[botleft.x][i] != null && wall[botleft.x][i].type != Wall.PLATFORM){
-				if(!(i == botleft.y && wall[botleft.x][i].type == Wall.PLATFORM)){
-					bounds[DOWN].value = wall[botleft.x][i].getLocation().y;
-					break;
-				}
-			}
-			else if(wall[botright.x][i] != null){
-				if(!(i == botleft.y && wall[botright.x][i].type == Wall.PLATFORM)){
-					bounds[DOWN].value = wall[botright.x][i].getLocation().y;
-					break;
-				}
-			}
-		}
-
-		//get left boundary
-		for(int i = topleft.x; i >= 0; i--){
-
-			//Eyes don't like to be grabbed
-			if((wall[i][topleft.y] != null && wall[i][topleft.y].type == Wall.EYE) && (wall[i][botleft.y] != null && wall[i][botleft.y].type == Wall.EYE))
-			{
-				bounds[LEFT].slidable = false;
-			}
-			else
-				bounds[LEFT].slidable = true;
-
-			if(topleft.y >= 0 && wall[i][topleft.y]!= null && wall[i][topleft.y].type != Wall.PLATFORM){
-				bounds[LEFT].value = wall[i][topleft.y].getLocation().x + Wall.TILE_WIDTH;
-				break;
-			}
-			else if(botleft.y < wall[i].length && wall[i][botleft.y]!= null && wall[i][botleft.y].type != Wall.PLATFORM){
-				bounds[LEFT].value = wall[i][botleft.y].getLocation().x + Wall.TILE_WIDTH;
-				break;
-			}
-		}
-		if(bounds[LEFT].value == 0) bounds[LEFT].slidable = false;
-
-		//get right boundary
-		for(int i = topright.x; i < wall.length; i++){
-
-			//Eyes don't like to be grabbed
-			if((wall[i][topright.y] != null && wall[i][topright.y].type == Wall.EYE) && (wall[i][botright.y] != null && wall[i][botright.y].type == Wall.EYE))
-			{
-				bounds[RIGHT].slidable = false;
-			}
-			else
-				bounds[RIGHT].slidable = true;
-
-			if(topright.y >= 0 && wall[i][topright.y] != null && wall[i][topright.y].type != Wall.PLATFORM){
-				bounds[RIGHT].value = wall[i][topright.y].getLocation().x;
-				break;
-			}
-			else if(botright.y >= 0 && wall[i][botright.y] != null && wall[i][botright.y].type != Wall.PLATFORM){
-				bounds[RIGHT].value = wall[i][botright.y].getLocation().x;
-				break;
-			}
-		}
-		if(bounds[RIGHT].value == width) bounds[RIGHT].slidable = false;
-		return bounds;
-	}
-
 	//Save all tiles of the level
-	@SuppressWarnings("unused")
 	private void saveLevel(String name){
 		try {
 			File file = new File("res/level/" + name + ".lvl");
@@ -696,6 +526,11 @@ public class Level extends JLayeredPane{
 			BufferedWriter bw = new BufferedWriter(fw);
 
 			String writeline = null;
+			
+			writeline = DIMENSION_CODE + " " + width + " " + height;
+			bw.write(writeline);
+			bw.newLine();
+			
 			for(int i = 0; i < wall.length; i++ ){
 				for(int j = 0; j < wall[i].length; j++){
 					if(wall[i][j] == null) continue; //skip empty spaces
@@ -762,18 +597,61 @@ public class Level extends JLayeredPane{
 
 			for(Entity e : entity){
 				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+				if(e.entity_code.equals(SPIKE_CODE)){
+					writeline += " " + ((SpikeTrap)e).rotation;
+				}
+				bw.write(writeline);
+				bw.newLine();
+			}
+			
+			for(Entity e: fluids){
+				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 				if(e.entity_code == WATER_CODE)
 					writeline += " " + e.w + " " + e.h;
 				bw.write(writeline);
+				bw.newLine();
 			}
 
-			writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
-			bw.write(writeline);
+			//writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+			//bw.write(writeline);
 
 
 			bw.flush();
 			bw.close();
 		} catch (IOException e) { e.printStackTrace(); }
 
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) { }
+	@Override
+	public void mouseEntered(MouseEvent arg0) { }
+	@Override
+	public void mouseExited(MouseEvent arg0) { }
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		
+	}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }
