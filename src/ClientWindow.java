@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 
@@ -11,6 +12,7 @@ public class ClientWindow extends JFrame{
 	private static int xoffset = 0, yoffset = 0; //how far to move the level so that the player is visible?
 	private static final int playerPadding = 50; //how close to any given edge of the screen can the player be?
 	public static ClientWindow activeWindow;
+	public static MainMenu mainMenu;
 
 	public static final int WIDTH = 1080;
 	public static final int HEIGHT = 720;
@@ -23,14 +25,18 @@ public class ClientWindow extends JFrame{
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
 		
-		this.setContentPane(new JScrollPane());
+		//this.setContentPane(new JScrollPane());
 		this.getContentPane().setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		this.pack();
+		
+		mainMenu = new MainMenu();
+		mainMenu.setBackground(Color.black);
+		this.setContentPane(mainMenu);
 
 		//Set the default controls or load from a file (not implemented)
 		Configs.init();
 
-		loadLevel("test");
+		//loadLevel("test");
 	}
 
 	//Load a game level
@@ -39,13 +45,11 @@ public class ClientWindow extends JFrame{
 		//Create Preloader
 		preloader = new Preloader();
 		this.setContentPane(preloader);
-		//this.pack();
+		this.repaint();
 
 		//Create a new instance of level and set it as the content pane
 		preloader.updateOverview("Creating Level");
 		level = new Level(this);
-		//this.setContentPane(level);
-		//this.pack();
 
 		//Load the level from a file
 		level.loadLevel(str);
@@ -79,7 +83,7 @@ public class ClientWindow extends JFrame{
 			xChange = -1 * (playerCoords.x - WIDTH/2) / playerPadding;
 		}
 		if(playerCoords.x < playerPadding || playerCoords.x > WIDTH-playerPadding) {
-			xChange *= 2; //if the player is too far to the side, double camera speed
+			xChange *= 2.5; //if the player is too far to the side, double camera speed
 		}
 		
 		
@@ -90,18 +94,21 @@ public class ClientWindow extends JFrame{
 		else if(playerCoords.y > HEIGHT/2 && yoffset > -1 * level.height){ //go down
 			yChange = -1 * (playerCoords.y - HEIGHT/2) / playerPadding;
 		}
-		if(playerCoords.y < playerPadding || playerCoords.y > HEIGHT-playerPadding){
+		
+		/*if(playerCoords.y < playerPadding || playerCoords.y > HEIGHT-playerPadding){
 			yChange *= 2; //if the player is too far to the side, double camera speed
 		}
+		if(playerCoords.y >= HEIGHT - 100){
+			yChange *= 3;
+		}*/
+		/*if(playerCoords.y >= HEIGHT){
+			yChange -= (playerCoords.x - HEIGHT) + 100;
+		}*/
 
 
 		//Move the level
 		xoffset = level.getLocation().x + xChange;
 		yoffset = level.getLocation().y + yChange;
-
-		if(level.isPlayerAirDrop() && playerCoords.y > HEIGHT){
-			yChange *= 6; //if the player is air dropping, oh boy do we have a problem.
-		}
 		
 		//Make sure you don't go off the edge of the level
 		if(xoffset > 0) xoffset = 0;

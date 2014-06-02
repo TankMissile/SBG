@@ -13,7 +13,7 @@ public class Player extends Entity implements KeyListener {
 	private HealthBar healthbar;
 
 	//Movement caps
-	private final int VCAP = 120; //max fall speed
+	public static final int VCAP = 120; //max fall speed
 	private final int SLIDECAP = 17; //max wallslide fall speed
 	private final int HCAP = 40; //max horizontal speed
 	private final int ACCEL = 3; //Rate of horizontal acceleration on ground
@@ -381,7 +381,7 @@ public class Player extends Entity implements KeyListener {
 				}
 			}
 			if(airdrop)
-				if(!in_fluid) tempvcap = VCAP * 6;
+				if(!in_fluid) tempvcap = VCAP * 3;
 				else {
 					airdrop = false;
 				}

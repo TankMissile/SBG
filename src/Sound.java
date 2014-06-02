@@ -5,20 +5,26 @@ import java.io.*;
 public class Sound {
 	
 	static String currentSong = null;
+	static Clip playing;
 	
 	public static void music(String name){
 		if(name.equals(currentSong)) return;
 		
+		if(playing != null) playing.close();
+		
 		try {
-			Clip clip = AudioSystem.getClip();
+			playing = AudioSystem.getClip();
 			AudioInputStream inputStream = AudioSystem.getAudioInputStream(Sound.class.getResourceAsStream("music/" + name + ".wav"));
-			clip.open(inputStream);
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
+			playing.open(inputStream);
+			playing.loop(Clip.LOOP_CONTINUOUSLY);
 			currentSong = name;
 		} 
 		catch (LineUnavailableException e) { e.printStackTrace(); } 
 		catch (UnsupportedAudioFileException e) { e.printStackTrace(); } 
 		catch (IOException e) { System.err.println("Audio file not found: music/" + name + ".wav"); }
+		finally{
+			System.out.println("Hi");
+		}
 		
 	}
 	
