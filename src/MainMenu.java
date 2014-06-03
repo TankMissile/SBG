@@ -52,7 +52,7 @@ public class MainMenu extends JPanel implements ActionListener {
 		
 		(new Thread(new Runnable(){ @Override public void run(){ 
 				loadTitleImage();
-				Sound.music("The_Invention_of_Color"); 
+				Sound.music("Sad_March"); 
 			} } )).start();
 	}
 	
@@ -75,7 +75,7 @@ public class MainMenu extends JPanel implements ActionListener {
 		String command = e.getActionCommand();
 		
 		if(command.equals("testlevel")){
-			ClientWindow.activeWindow.loadLevel("test");
+			ClientWindow.activeWindow.loadLevel("testCopy");
 		}
 		
 		if(command.equals("leveleditor")){

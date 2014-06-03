@@ -12,7 +12,7 @@ public class Wall extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	//Load these only once
-	private static BufferedImage wall, background;
+	public static BufferedImage wall, background;
 
 	//integer values for each wall material
 	public static final int

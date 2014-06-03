@@ -19,8 +19,8 @@ public class Sound {
 			playing.loop(Clip.LOOP_CONTINUOUSLY);
 			currentSong = name;
 		} 
-		catch (LineUnavailableException e) { e.printStackTrace(); } 
-		catch (UnsupportedAudioFileException e) { e.printStackTrace(); } 
+		catch (LineUnavailableException e) { } 
+		catch (UnsupportedAudioFileException e) {  } 
 		catch (IOException e) { System.err.println("Audio file not found: music/" + name + ".wav"); }
 		
 	}

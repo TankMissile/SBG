@@ -42,7 +42,7 @@ public class ClientWindow extends JFrame{
 		//Create Preloader
 		preloader = new Preloader();
 		this.setContentPane(preloader);
-		this.revalidate();
+		//this.revalidate();
 		this.repaint();
 
 		//Create a new instance of level and set it as the content pane
@@ -55,7 +55,7 @@ public class ClientWindow extends JFrame{
 		//Make everything visible and resize the window to fit the frame
 		this.getContentPane().removeAll();
 		this.getContentPane().add(level);
-		this.revalidate();
+		//this.revalidate();
 	}
 	
 	//Load a game level in the editor
@@ -63,7 +63,7 @@ public class ClientWindow extends JFrame{
 		//Create Preloader
 		preloader = new Preloader();
 		this.setContentPane(preloader);
-		this.revalidate();
+		//this.revalidate();
 		this.repaint();
 
 		//Create a new instance of level and set it as the content pane
@@ -76,7 +76,9 @@ public class ClientWindow extends JFrame{
 		//Make everything visible and resize the window to fit the frame
 		this.getContentPane().removeAll();
 		this.getContentPane().add(levelEditor);
-		this.revalidate();
+		//this.revalidate();
+		
+		levelEditor.requestFocusInWindow();
 	}
 
 	public static void main(String[] args) {
