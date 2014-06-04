@@ -364,7 +364,7 @@ public class Level extends JLayeredPane{
 				}
 
 				//check for a tile above
-				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //If there's a tile there and the current tile is not dirt or they're both dirt
+				if(j - 1 >= 0 && wall[i][j-1] != null && ( (w.type != Wall.DIRT && wall[i][j-1].type != Wall.PLATFORM) || wall[i][j-1].type == w.type)){ //If there's a tile there and the current tile is not dirt or they're both dirt
 					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //If the current tile is not eye or they're both eye
 						up = true;
 				}

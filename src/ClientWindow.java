@@ -92,10 +92,10 @@ public class ClientWindow extends JFrame{
 			this.add(transition);
 			for(int i = 0; i < 255; i++){
 				transition.setBackground(new Color(0,0,0,i));
+				try {
+					Thread.sleep(1000/30);
+				} catch (InterruptedException e) { e.printStackTrace(); }
 			}
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) { e.printStackTrace(); }
 		}
 		else if(s.equals("fade_in_black)")){
 			try {
@@ -103,6 +103,9 @@ public class ClientWindow extends JFrame{
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			for(int i = 255; i > 0; i--){
 				transition.setBackground(new Color(0,0,0,i));
+				try {
+					Thread.sleep(1000/30);
+				} catch (InterruptedException e) { e.printStackTrace(); }
 			}
 			this.remove(transition);
 		}

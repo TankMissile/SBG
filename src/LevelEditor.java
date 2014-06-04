@@ -44,11 +44,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			WATER_CODE = "wt",
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
+	public static final String wallMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE, PLATFORM_CODE };
+	public static final String backgroundMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE };
 
-	private String currentType = WALL_CODE;
-	private int currentMaterial = 0;
-	private String wallMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE, PLATFORM_CODE };
-	
+	String currentType = WALL_CODE;
+	int currentMaterial = 0;
+
 	private boolean drawing = false;
 	private boolean erasing = false;
 	private JLabel ghostImage;
@@ -66,9 +67,10 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	private ArrayList<Entity> fluids = new ArrayList<Entity>(); //Stores all fluids
 	private JLabel player; //The player
 	public HealthBar healthbar; //The player's health bar
-	private GameMenu gamemenu; //The pause menu (opened with esc)
+	private EditorMenu menu; //The pause menu (opened with esc)
 	@SuppressWarnings("unused")
 	private ClientWindow container;
+	String savename;
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
@@ -88,6 +90,8 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 	//Load a level
 	public void loadLevel(String path){
+		savename = path;
+
 		this.removeAll(); //Clear everything from the level
 
 		String bgm = "Dungeon"; //Stores the filename of the background music for the level
@@ -240,8 +244,8 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		//Create Pause menu
 		ClientWindow.preloader.updateOverview("Finalizing");
 		ClientWindow.preloader.updateCurrentStatus("Creating pause menu...");
-		gamemenu = new GameMenu();
-		this.add(gamemenu, MENU_DEPTH);
+		menu = new EditorMenu(this);
+		this.add(menu, MENU_DEPTH);
 
 		//Add static background color
 		//System.out.println("Adding Background Color...");
@@ -257,8 +261,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 		if(bgm != null)
 			Sound.music(bgm);
-
-		saveLevel("testCopy");
 
 		new Thread(new Runnable(){ @Override public void run() { panCamera();  } }).start();
 	}
@@ -362,7 +364,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 
 		//check for a tile above
-		if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //If there's a tile there and the current tile is not dirt or they're both dirt
+		if(j - 1 >= 0 && wall[i][j-1] != null && ( (w.type != Wall.DIRT && wall[i][j-1].type != Wall.PLATFORM) || wall[i][j-1].type == w.type)){ //If there's a tile there and the current tile is not dirt or they're both dirt
 			if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //If the current tile is not eye or they're both eye
 				up = true;
 		}
@@ -410,12 +412,16 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	private void drawSingleBackground(int i, int j){
 		//whether there's a tile in each direction
 		boolean up = false, down = false, left = false, right = false;
+		
+		//make sure the array index isn't out of bounds
+		if(i > background.length-1 || i < 0 || j > background[i].length-1 || j < 0) return;
 
 		//Position in tile array
 		int x = Wall.COLUMN, y = Wall.ROW;
 
 		//Position in level
 		int xpos, ypos;
+		
 
 		//Get the correct tile type and location
 		Wall w = background[i][j];
@@ -551,7 +557,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	}
 
 	//Save all tiles of the level
-	private void saveLevel(String name){
+	void saveLevel(String name){
 		try {
 			File file = new File("res/level/" + name + ".lvl");
 			if(!file.exists()){
@@ -661,10 +667,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			bw.close();
 		} catch (IOException e) { e.printStackTrace(); }
 
-	}
-
-	private void drawTempLocalWalls(Point p, Wall w){
-
+		System.out.println("Level saved to: " + name);
 	}
 
 	private void drawLocalWalls(Point p, Wall w){
@@ -673,35 +676,19 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		drawSingleWall(p.x+1,p.y);
 		drawSingleWall(p.x, p.y-1);
 		drawSingleWall(p.x, p.y+1);
+		this.repaint();
 	}
 
-	private void getGhostImage(){
-		if(currentType == WALL_CODE){
-			this.remove(ghostImage);
-			if(wallMaterials[currentMaterial] == DIRT_CODE){
-				ghostImage = loadSingleTile(7, 3, Wall.wall);
-			}
-			if(wallMaterials[currentMaterial] == STONE_CODE){
-				ghostImage = loadSingleTile(3, 3, Wall.wall);
-			}
-			if(wallMaterials[currentMaterial] == WOOD_CODE){
-				ghostImage = loadSingleTile(3, 7, Wall.wall);
-			}
-			if(wallMaterials[currentMaterial] == EYE_CODE){
-				ghostImage = loadSingleTile(8, 3, Wall.wall);
-			}
-			if(wallMaterials[currentMaterial] == PLATFORM_CODE){
-				ghostImage = loadSingleTile(3, 8, Wall.wall);
-			}
-			
-			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
-			this.add(ghostImage, new Integer(MENU_DEPTH - 1));
-			this.repaint();
-		}
+	private void drawLocalBackgrounds(Point p, Wall w){
+		drawSingleBackground(p.x, p.y);
+		drawSingleBackground(p.x-1, p.y);
+		drawSingleBackground(p.x+1,p.y);
+		drawSingleBackground(p.x, p.y-1);
+		drawSingleBackground(p.x, p.y+1);
+		this.repaint();
 	}
 
 	private JLabel loadSingleTile(int x, int y, BufferedImage spritesheet){
-
 		BufferedImage sprite = spritesheet.getSubimage(x*Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
 		JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
 		image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
@@ -709,35 +696,21 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	}
 
 	private void drawCurrentItem(){
-		//Cancel the action if the mouse is out of bounds
-		if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
-			return;
 
 		//Add wall if selected
 		if(currentType == WALL_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > wall.length - 1 || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length - 1)
+				return;
+			
 			//Get the integer representation of the material
-			int type = Wall.NONE;
-			if(wallMaterials[currentMaterial] == DIRT_CODE){
-				type = Wall.DIRT;
-			}
-			else if(wallMaterials[currentMaterial] == STONE_CODE){
-				type = Wall.STONE;
-			}
-			else if(wallMaterials[currentMaterial] == WOOD_CODE){
-				type = Wall.WOOD;
-			}
-			else if(wallMaterials[currentMaterial] == EYE_CODE){
-				type = Wall.EYE;
-			}
-			else if(wallMaterials[currentMaterial] == PLATFORM_CODE){
-				type = Wall.PLATFORM;
-			}
+			int type = getWallTypeValue();
 
 			//If there's a wall there, check that it's not the same as the wall being placed
 			if(wall[currCoords.x][currCoords.y] != null){
 				//dirt
 				if(wall[currCoords.x][currCoords.y].type != type){
-					this.remove(wall[currCoords.x][currCoords.y]);
+					if(wall[currCoords.x][currCoords.y] != null) this.remove(wall[currCoords.x][currCoords.y]);
 					wall[currCoords.x][currCoords.y] = new Wall(currCoords.x, currCoords.y, type); 
 					this.add(wall[currCoords.x][currCoords.y], WALL_DEPTH);
 				}
@@ -754,21 +727,107 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			}
 			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
 		}
+
+		//Add background if selected
+		else if(currentType == BACKGROUND_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > background.length - 1 || currCoords.y < 0 || currCoords.y > background[currCoords.x].length - 1)
+				return;
+			
+			//Get the integer representation of the material
+			int type = getBackgroundTypeValue();
+
+			//If there's a background there, check that it's not the same as the wall being placed
+			if(background[currCoords.x][currCoords.y] != null){
+				if(background[currCoords.x][currCoords.y].type != type){
+					this.remove(background[currCoords.x][currCoords.y]);
+					background[currCoords.x][currCoords.y] = new Wall(currCoords.x, currCoords.y, type, Wall.BACKGROUND_WALL); 
+					this.add(background[currCoords.x][currCoords.y], WALL_DEPTH);
+				}
+			}
+			else{
+				if(currentType == PLATFORM_CODE){
+					background[currCoords.x][currCoords.y] = new Wall(currCoords.x, currCoords.y, Wall.PLATFORM); 
+					this.add(background[currCoords.x][currCoords.y], PASSABLE_WALL_DEPTH);
+				}
+				else {
+					background[currCoords.x][currCoords.y] = new Wall(currCoords.x, currCoords.y, type); 
+					this.add(background[currCoords.x][currCoords.y], BACKGROUND_DEPTH);
+				}
+			}
+			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
+		}
+		
+		this.repaint();
+	}
+
+	private int getWallTypeValue(){
+		int type = Wall.NONE;
+		if(wallMaterials[currentMaterial] == DIRT_CODE){
+			type = Wall.DIRT;
+		}
+		else if(wallMaterials[currentMaterial] == STONE_CODE){
+			type = Wall.STONE;
+		}
+		else if(wallMaterials[currentMaterial] == WOOD_CODE){
+			type = Wall.WOOD;
+		}
+		else if(wallMaterials[currentMaterial] == EYE_CODE){
+			type = Wall.EYE;
+		}
+		else if(wallMaterials[currentMaterial] == PLATFORM_CODE){
+			type = Wall.PLATFORM;
+		}
+
+		return type;
+	}
+	private int getBackgroundTypeValue(){
+		int type = Wall.NONE;
+		if(backgroundMaterials[currentMaterial] == DIRT_CODE){
+			type = Wall.DIRT;
+		}
+		else if(backgroundMaterials[currentMaterial] == STONE_CODE){
+			type = Wall.STONE;
+		}
+		else if(backgroundMaterials[currentMaterial] == WOOD_CODE){
+			type = Wall.WOOD;
+		}
+		else if(backgroundMaterials[currentMaterial] == EYE_CODE){
+			type = Wall.EYE;
+		}
+		else if(backgroundMaterials[currentMaterial] == PLATFORM_CODE){
+			type = Wall.PLATFORM;
+		}
+
+		return type;
 	}
 
 	private void eraseCurrentTile(){
-		//Cancel the action if the mouse is out of bounds
-		if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
-			return;
-		
-
 		if(currentType == WALL_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
+				return;
+			
 			//if there's no wall here, cancel the action
 			if(wall[currCoords.x][currCoords.y] == null) return;
 			this.remove(wall[currCoords.x][currCoords.y]);
 			wall[currCoords.x][currCoords.y] = null;
 			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
 		}
+
+		if(currentType == BACKGROUND_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > background.length || currCoords.y < 0 || currCoords.y > background[currCoords.x].length)
+				return;
+			
+			//if there's no wall here, cancel the action
+			if(background[currCoords.x][currCoords.y] == null) return;
+			this.remove(background[currCoords.x][currCoords.y]);
+			background[currCoords.x][currCoords.y] = null;
+			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
+		}
+		
+		this.repaint();
 	}
 
 	private void panCamera(){
@@ -776,6 +835,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		int hmov = this.getLocation().x, vmov = this.getLocation().y; //stores where to move in each direction
 		Point startPoint = this.getLocation();
 		while(!kill){
+			this.requestFocusInWindow();
 			if(move_left && !move_right){
 				hmov = this.getLocation().x + move_speed;
 			}
@@ -799,7 +859,17 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			else if(vmov < -1 * this.getHeight() + ClientWindow.HEIGHT) vmov = -1 * this.getHeight() + ClientWindow.HEIGHT;
 
 			this.setLocation(hmov, vmov);
+			menu.setLocation(-hmov, -vmov);
 			if(this.getLocation() != startPoint) moveGhost();
+
+			//Clean out ghost ghostImages
+			if(this.getComponentCountInLayer(new Integer(MENU_DEPTH-1)) > 1){
+				java.awt.Component toRemove[] = this.getComponentsInLayer(new Integer(MENU_DEPTH-1));
+				for(java.awt.Component c: toRemove){
+					if(c != ghostImage)
+						this.remove(c);
+				}
+			}
 
 			try {
 				Thread.sleep(1000/30);
@@ -818,7 +888,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 		currCoords = newCoords;
 		getGhostImage();
-		ghostImage.setLocation(newCoords.x * Wall.TILE_WIDTH, newCoords.y * Wall.TILE_HEIGHT);
 
 		//System.out.println(currCoords);
 
@@ -830,8 +899,55 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 	}
 
-	private void openEditorMenu(boolean b){
+	private void getGhostImage(){
+		if(currentType == WALL_CODE){
+			this.remove(ghostImage);
+			if(wallMaterials[currentMaterial] == DIRT_CODE){
+				ghostImage = loadSingleTile(7, 3, Wall.wall);
+			}
+			if(wallMaterials[currentMaterial] == STONE_CODE){
+				ghostImage = loadSingleTile(3, 3, Wall.wall);
+			}
+			if(wallMaterials[currentMaterial] == WOOD_CODE){
+				ghostImage = loadSingleTile(3, 7, Wall.wall);
+			}
+			if(wallMaterials[currentMaterial] == EYE_CODE){
+				ghostImage = loadSingleTile(8, 3, Wall.wall);
+			}
+			if(wallMaterials[currentMaterial] == PLATFORM_CODE){
+				ghostImage = loadSingleTile(3, 8, Wall.wall);
+			}
 
+			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
+			ghostImage.setLocation(currCoords.x * Wall.TILE_WIDTH, currCoords.y * Wall.TILE_HEIGHT);
+			this.add(ghostImage, new Integer(WALL_DEPTH + 1));
+			this.repaint();
+		}
+		else if(currentType == BACKGROUND_CODE){
+			this.remove(ghostImage);
+			if(backgroundMaterials[currentMaterial] == DIRT_CODE){
+				ghostImage = loadSingleTile(7, 3, Wall.background);
+			}
+			if(backgroundMaterials[currentMaterial] == STONE_CODE){
+				ghostImage = loadSingleTile(3, 3, Wall.background);
+			}
+			if(backgroundMaterials[currentMaterial] == WOOD_CODE){
+				ghostImage = loadSingleTile(3, 7, Wall.background);
+			}
+			if(backgroundMaterials[currentMaterial] == EYE_CODE){
+				ghostImage = loadSingleTile(8, 3, Wall.background);
+			}
+
+			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
+			ghostImage.setLocation(currCoords.x * Wall.TILE_WIDTH, currCoords.y * Wall.TILE_HEIGHT);
+			this.add(ghostImage, new Integer(BACKGROUND_DEPTH + 1));
+			this.repaint();
+		}
+	}
+
+	private void openEditorMenu(boolean b){
+		menu.setVisible(b);
+		menuOpen = b;
 	}
 
 	@Override
@@ -848,17 +964,18 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 		else if(e.getButton() == MouseEvent.BUTTON3){
 			erasing = true;
+			eraseCurrentTile();
 		}
 	}
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if(e.getButton() == MouseEvent.BUTTON1){
 			drawing = false;
-			saveLevel("testCopy");
+			//saveLevel("testCopy");
 		}
 		else if(e.getButton() == MouseEvent.BUTTON3){
 			erasing = false;
-			saveLevel("testCopy");
+			//saveLevel("testCopy");
 		}
 	}
 
@@ -899,10 +1016,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 
 		if(Configs.isMenuKey(key)){
-			if(!menuOpen)
+			if(!menuOpen){
 				openEditorMenu(true);
-			else
+			}
+			else{
 				openEditorMenu(false);
+			}
 		}
 	}
 
@@ -921,10 +1040,18 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		currentMaterial = (e.getWheelRotation() + currentMaterial) % wallMaterials.length;
-		while(currentMaterial < 0){
-			currentMaterial += wallMaterials.length;
+		if(currentType == WALL_CODE){
+			currentMaterial = (e.getWheelRotation() + currentMaterial) % wallMaterials.length;
+			while(currentMaterial < 0){
+				currentMaterial += wallMaterials.length;
+			}
 		}
-		moveGhost();
+		if(currentType == BACKGROUND_CODE){
+			currentMaterial = (e.getWheelRotation() + currentMaterial) % backgroundMaterials.length;
+			while(currentMaterial < 0){
+				currentMaterial += backgroundMaterials.length;
+			}
+		}
+		getGhostImage();
 	}
 }

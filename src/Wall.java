@@ -136,5 +136,4 @@ public class Wall extends JPanel {
 		image.setSize(TILE_WIDTH, TILE_HEIGHT);
 		this.add(image);
 	}
-
 }

@@ -75,7 +75,7 @@ public class MainMenu extends JPanel implements ActionListener {
 		String command = e.getActionCommand();
 		
 		if(command.equals("testlevel")){
-			ClientWindow.activeWindow.loadLevel("testCopy");
+			ClientWindow.activeWindow.loadLevel("test");
 		}
 		
 		if(command.equals("leveleditor")){
