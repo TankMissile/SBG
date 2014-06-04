@@ -129,9 +129,9 @@ You play as a smiling blue guy.<br />
 <tr>
   <td>
     Stone, Wood, Dirt<br />
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/stone_icon.png?raw=true"></span>
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/wood_icon.png?raw=true"></span>
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/dirt_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/stoneIcon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/woodIcon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/dirtIcon.png?raw=true"></span>
   </td>
   <td>
     Just a tile.  Unremarkable.
@@ -140,8 +140,8 @@ You play as a smiling blue guy.<br />
 <tr>
   <td>
     Eye<br />
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/eye_left_icon.png?raw=true"></span>
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/eye_right_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/lefteyeIcon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/righteyeIcon.png?raw=true"></span>
   </td>
   <td>
     Eyes don't like being touched.  You won't be able to interact with the wall, but you can wall climb over the top if you've got the momentum.
@@ -150,7 +150,7 @@ You play as a smiling blue guy.<br />
 <tr>
   <td>
     Wooden Platform<br />
-    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/platform_icon.png?raw=true"></span>
+    <span style="margin-right:5px"> <img src="https://github.com/TankMissile/SBG/blob/master/res/img/platformIcon.png?raw=true"></span>
   </td>
   <td>
     These allow you to drop through them if you hold the crouch button for a short duration.  Air drop will automatically ignore wooden platforms, so be careful!
