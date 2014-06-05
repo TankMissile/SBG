@@ -30,6 +30,9 @@ import javax.swing.JPanel;
 
 public class LevelEditor extends JLayeredPane implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener{
 	private static final long serialVersionUID = 1L;
+	
+	//Stores textual representations of each type of level object, both for identification
+	//And for saving/reading the .lvl file
 	public static final String WALL_CODE = "wa",
 			PASSABLE_WALL_CODE = "pw",
 			BACKGROUND_CODE = "bg",
@@ -44,23 +47,33 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			WATER_CODE = "wt",
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
+	
+	//Store codes for available materials for each tile type
 	public static final String wallMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE, PLATFORM_CODE };
 	public static final String backgroundMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE };
-
-	String currentType = WALL_CODE;
+	//index of material in material array
 	int currentMaterial = 0;
 
-	private boolean drawing = false;
-	private boolean erasing = false;
+	//Current tile type being drawn
+	String currentType = WALL_CODE;
+
+	private boolean drawing = false; //Is the user drawing tiles?
+	private boolean erasing = false; //Is the user erasing tiles?
+	
+	//Stores the graphical representation of the current tile type
 	private JLabel ghostImage;
+	
+	//mouse location, in units of tiles
 	private Point currCoords = new Point(0, 0);
 
+	//Directions for camera movement
 	private boolean move_up = false, move_down = false, move_left = false, move_right = false;
-	private final int move_speed = 10;
+	private final int move_speed = 10; //speed of camera movement
 
+	//Is the menu open?
 	private boolean menuOpen = false;
 
-	public int width, height;
+	public int width, height; //Size of the level
 	private Wall[][] wall; //Stores wall tiles (interact with player)
 	private Wall[][] background; //Stores background tiles (don't interact with player)
 	private ArrayList<Entity> entity = new ArrayList<Entity>(); //Stores all entities other than fluids
@@ -68,18 +81,15 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	private JLabel player; //The player
 	public HealthBar healthbar; //The player's health bar
 	private EditorMenu menu; //The pause menu (opened with esc)
-	@SuppressWarnings("unused")
-	private ClientWindow container;
-	String savename;
+	String savename; //Name of the file to be saved
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
 	//Constructor
-	public LevelEditor(ClientWindow cw){
+	public LevelEditor(){
 		this.setLayout(null);
 		this.setVisible(true);
-		this.container = cw;
 		ghostImage = new JLabel();
 
 		this.addKeyListener(this);

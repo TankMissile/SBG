@@ -47,7 +47,7 @@ public class ClientWindow extends JFrame{
 
 		//Create a new instance of level and set it as the content pane
 		preloader.updateOverview("Creating Level");
-		level = new Level(this);
+		level = new Level();
 
 		//Load the level from a file
 		level.loadLevel(str);

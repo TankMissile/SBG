@@ -21,6 +21,9 @@ public class Level extends JLayeredPane{
 	private static final long serialVersionUID = 1L;
 
 	private final int UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3; //Define directional array numbers
+
+	//Stores textual representations of each type of level object, both for identification
+	//And for saving/reading the .lvl file
 	public static final String WALL_CODE = "wa",
 			PASSABLE_WALL_CODE = "pw",
 			BACKGROUND_CODE = "bg",
@@ -36,7 +39,7 @@ public class Level extends JLayeredPane{
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
 
-	public int width, height;
+	public int width, height; //Size of the level
 	private Wall[][] wall; //Stores wall tiles (interact with player)
 	private Wall[][] background; //Stores background tiles (don't interact with player)
 	private ArrayList<Entity> entity = new ArrayList<Entity>(); //Stores all entities other than fluids
@@ -44,24 +47,22 @@ public class Level extends JLayeredPane{
 	private Player player; //The player
 	public HealthBar healthbar; //The player's health bar
 	private GameMenu gamemenu; //The pause menu (opened with esc)
-	@SuppressWarnings("unused")
-	private ClientWindow container;
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
 	//Constructor
-	public Level(ClientWindow cw){
+	public Level(){
 		this.setLayout(null);
 		this.setVisible(true);
-		this.container = cw;
 	}
-	
+
 	//Return the player's coordinates relative to the level
 	public Point getPlayerCoords(){
 		return(player.getLocation());
 	}
-	
+
+	//Is the player currently in air drop?
 	public boolean isPlayerAirDrop(){
 		return player.airdrop;
 	}
@@ -85,7 +86,7 @@ public class Level extends JLayeredPane{
 
 			Entity newEntity = null; //Stores a new entity to be loaded
 
-			//Find the dimensions of the level according to the file
+			//Find the dimensions of the level according to the file, abort if not found
 			while((readline = br.readLine()) != null){
 
 				splitline = readline.split(" ");
@@ -100,6 +101,8 @@ public class Level extends JLayeredPane{
 				System.err.println("Level dimensions could not be loaded correctly, aborting...");
 				return;
 			}
+			
+			//Reload the level file to start from line 1
 			istream = getClass().getResourceAsStream("/level/"+path+".lvl");
 			br = new BufferedReader(new InputStreamReader(istream));
 
@@ -109,14 +112,18 @@ public class Level extends JLayeredPane{
 
 			//Begin actual loading
 			ClientWindow.preloader.updateCurrentStatus("Reading Level File");
-			while((readline = br.readLine()) != null){
-				splitline = readline.split(" ");
+			while((readline = br.readLine()) != null){ //read entire file line by line
+				splitline = readline.split(" "); //split the line by spaces
 
+				
+				/////First word determines the type of object to be added
 				//Non-Passable walls
 				if(splitline[0].equals(WALL_CODE)){
-					x = Integer.parseInt(splitline[2]);
-					y = Integer.parseInt(splitline[3]);
-					t = Wall.NONE;
+					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
+					y = Integer.parseInt(splitline[3]); //fourth word defines y coordinate
+					t = Wall.NONE; //material, defaults to none
+					
+					//Second word defines material
 					if(splitline[1].equals(STONE_CODE)){
 						t = Wall.STONE;
 					}
@@ -129,27 +136,41 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(EYE_CODE)){
 						t = Wall.EYE;
 					}
+					
+					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Wall at " + x + " " + y);
+					
+					//Create and add the wall to the level
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], WALL_DEPTH);
 				}
+				
 				//Passable Walls
 				else if(splitline[0].equals(PASSABLE_WALL_CODE)){
-					x = Integer.parseInt(splitline[2]);
-					y = Integer.parseInt(splitline[3]);
-					t = Wall.NONE;
+					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
+					y = Integer.parseInt(splitline[3]); //fourth word defines y coordinate
+					t = Wall.NONE; //material, defaults to none
+					
+					//Second word defines material
 					if(splitline[1].equals(PLATFORM_CODE)){
 						t = Wall.PLATFORM;
 					}
+					
+					//Tell the preloader what's being added
+					ClientWindow.preloader.updateCurrentStatus("Adding Platform at " + x + " " + y);
+					
+					//Create and add the wall to the level
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], PASSABLE_WALL_DEPTH);
-					ClientWindow.preloader.updateCurrentStatus("Adding Platform at " + x + " " + y);
 				}
+				
 				//Backgrounds
 				else if(splitline[0].equals(BACKGROUND_CODE)){
-					x = Integer.parseInt(splitline[2]);
-					y = Integer.parseInt(splitline[3]);
-					t = Wall.NONE;
+					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
+					y = Integer.parseInt(splitline[3]); //fourth word defines the y coordinate
+					t = Wall.NONE; //material, defaults to none
+					
+					//Second word defines material
 					if(splitline[1].equals(STONE_CODE)){
 						t = Wall.STONE;
 					}
@@ -165,46 +186,56 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(PLATFORM_CODE)){
 						t = Wall.PLATFORM;
 					}
+					
+					//Tell the preloader what's being added
+					ClientWindow.preloader.updateCurrentStatus("Adding Background Tile at " + x + " " + y);
+					
+					//Create and add the background tile to the level
 					background[x][y] = new Wall(x, y, t, Wall.BACKGROUND_WALL);
 					this.add(background[x][y], BGWALL_DEPTH);
-					ClientWindow.preloader.updateCurrentStatus("Adding Background Tile at " + x + " " + y);
 				}
+				
 				//The Player
 				else if(splitline[0].equals(PLAYER_CODE)){
-					//System.out.println("Adding Player...");
-					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
-					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
+					//Tell the preloader what's being added
+					ClientWindow.preloader.updateCurrentStatus("Adding Player");
+					
+					//get the tile coordinates and center the player in them
+					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2; //Second word defines x coordinate
+					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT; //Third word defines y coordinate
 
+					//Create and add the player to the level
 					player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
-					ClientWindow.preloader.updateCurrentStatus("Adding Player");
 				}
+				
 				//Non-player Entities
 				else if(splitline[0].equals(ENTITY_CODE)){
-					//System.out.println("Adding entity: " + splitline[1]);
+					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Entity: " + splitline[1]);
 
+					//Second word defines entity type
 					if(splitline[1].equals(SPIKE_CODE)){
 						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
-						entity.add(newEntity);
+						entity.add(newEntity); //Add to entities array
 						this.add(newEntity, ENTITY_DEPTH, 1 );
 					}
 					else if(splitline[1].equals(WATER_CODE)){
 						newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
-						fluids.add(newEntity);
+						fluids.add(newEntity); //Add to fluids array
 						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
+				
 				//Background Music
 				else if(splitline[0].equals(MUSIC_CODE)){
-					bgm = splitline[1];
+					bgm = splitline[1]; //Second word defines song name, omit path and extension (will load .wav)
 				}
 			}
 
 			//Draw the background
 			ClientWindow.preloader.updateOverview("Drawing Background");
 			drawBackground();
-			//System.out.println("Complete.");
 
 			//Draw walls
 			ClientWindow.preloader.updateOverview("Drawing Walls");
@@ -220,7 +251,6 @@ public class Level extends JLayeredPane{
 		this.add(gamemenu, MENU_DEPTH);
 
 		//Add static background color
-		//System.out.println("Adding Background Color...");
 		ClientWindow.preloader.updateCurrentStatus("Coloring Background");
 		JPanel bgColor = new JPanel();
 		bgColor.setBackground(new Color(200, 220, 255));
@@ -229,10 +259,9 @@ public class Level extends JLayeredPane{
 
 		//Create the health bar and add it to screen
 		ClientWindow.preloader.updateCurrentStatus("Adding HUD");
-		//if(healthbar == null)
-		healthbar = new HealthBar();
-		this.add(healthbar, MENU_DEPTH, 0);
-
+		if(healthbar == null)
+			healthbar = new HealthBar();
+		this.add(healthbar, new Integer(MENU_DEPTH - 1), 0);
 
 		//Tell the player what his health bar is
 		player.linkHealthBar(healthbar);
@@ -241,9 +270,11 @@ public class Level extends JLayeredPane{
 		ClientWindow.preloader.updateOverview("Starting Game");
 		ClientWindow.preloader.updateCurrentStatus("");
 
+		//Load the song read in the file
 		if(bgm != null)
 			Sound.music(bgm);
 
+		//Unpause the player
 		player.pause(false);
 	}
 
