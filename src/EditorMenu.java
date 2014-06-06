@@ -38,12 +38,12 @@ public class EditorMenu extends JTabbedPane implements ActionListener {
 		}
 		else if(split[0].equals("wall"))
 		{
-			container.currentType = LevelEditor.WALL_CODE;
+			container.currentType = 0;
 			container.currentMaterial = Integer.parseInt(split[1]);
 		}
 		else if(split[0].equals("background"))
 		{
-			container.currentType = LevelEditor.BACKGROUND_CODE;
+			container.currentType = 1;
 			container.currentMaterial = Integer.parseInt(split[1]);
 		}
 	}

@@ -68,7 +68,7 @@ public class ClientWindow extends JFrame{
 
 		//Create a new instance of level and set it as the content pane
 		preloader.updateOverview("Creating Level");
-		levelEditor= new LevelEditor(this);
+		levelEditor= new LevelEditor();
 
 		//Load the level from a file
 		levelEditor.loadLevel(str);
@@ -86,6 +86,7 @@ public class ClientWindow extends JFrame{
 		activeWindow.start();
 	}
 
+	//Perform a graphical transition (i.e. fade to black, fade in from black, etc.)
 	public void transition(String s){
 		if(s.equals("fade_out_black")){
 			transition.setBackground(new Color(0,0,0,0));
@@ -111,6 +112,7 @@ public class ClientWindow extends JFrame{
 		}
 	}
 
+	//Move the camera toward the player
 	public static void moveCameraTowardPlayer(){
 		//Get player coordinates relative to level, then convert to relative to visibe frame
 		Point playerCoords = level.getPlayerCoords();
