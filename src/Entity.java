@@ -73,6 +73,7 @@ public class Entity extends JPanel{
 	}
 
 	//Image Handling
+	//Load an image
 	protected void loadImage(String path, int w, int h){
 		this.removeAll();
 		java.net.URL imgURL = getClass().getResource(path);
@@ -87,6 +88,8 @@ public class Entity extends JPanel{
 			if(w != this.getWidth() || h != this.getHeight()) System.out.println("Redraw failed: " + w + " " + h + " Entity size: " + this.getWidth() + " " + this.getHeight());
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 	}
+	
+	//Load a sub-image from a tilesheet
 	protected void loadImage(String path, int w, int h, int x, int y){
 		try {
 			this.removeAll();
@@ -97,6 +100,8 @@ public class Entity extends JPanel{
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 		return;
 	}
+	
+	//Load an image of a tile for use in large, tiled entities like fluids
 	protected JLabel loadTileImage(String path, int w, int h, int x, int y){
 		try {
 			BufferedImage sprite = ImageIO.read(getClass().getResource(path)).getSubimage((x /*+ frame*/) * Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);

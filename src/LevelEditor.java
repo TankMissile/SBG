@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -21,7 +22,9 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -51,11 +54,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	//Store codes for available materials for each tile type
 	public static final String wallMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE, PLATFORM_CODE };
 	public static final String backgroundMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE };
+	public static final String entityMaterials[] = { SPIKE_CODE };
 	//index of material in material array
 	int currentMaterial = 0;
 
 	//Current tile type being drawn
-	public static final String drawTypes[] = { WALL_CODE, BACKGROUND_CODE };
+	public static final String drawTypes[] = { WALL_CODE, BACKGROUND_CODE, ENTITY_CODE };
 	int currentType = 0;
 
 	private boolean drawing = false; //Is the user drawing tiles?
@@ -292,14 +296,14 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 	}
 
-	//Draw all background tiles in level
-	private void drawBackground(){
-		//For each tile in the level
-		for(int i = 0; i < background.length; i++){
-			for(int j = 0; j < background[i].length; j++){
-				drawSingleBackground(i, j);
-			}
-		}
+	//Draw the current tile and tiles touching it
+	private void drawLocalWalls(Point p, Wall w){
+		drawSingleWall(p.x, p.y);
+		drawSingleWall(p.x-1, p.y);
+		drawSingleWall(p.x+1,p.y);
+		drawSingleWall(p.x, p.y-1);
+		drawSingleWall(p.x, p.y+1);
+		this.repaint();
 	}
 
 	//Draw a single wall
@@ -421,6 +425,26 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		w.loadTileBackground(x, y);
 	}
 
+	//Draw all background tiles in level
+	private void drawBackground(){
+		//For each tile in the level
+		for(int i = 0; i < background.length; i++){
+			for(int j = 0; j < background[i].length; j++){
+				drawSingleBackground(i, j);
+			}
+		}
+	}
+
+	//Draw the current background tile and tiles touching it
+	private void drawLocalBackgrounds(Point p, Wall w){
+		drawSingleBackground(p.x, p.y);
+		drawSingleBackground(p.x-1, p.y); //left
+		drawSingleBackground(p.x+1,p.y); //right
+		drawSingleBackground(p.x, p.y-1); //up
+		drawSingleBackground(p.x, p.y+1); //down
+		this.repaint();
+	}
+
 	//Draw a single background
 	private void drawSingleBackground(int i, int j){
 		//whether there's a tile in each direction
@@ -493,18 +517,19 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		//check background walls
 		//Check left
 		if(i - 1 >= 0 && background[i-1][j] != null){ //tile exists
-			if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type) //not dirt or both dirt
-				if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type) //not platform or both platform
-					left = true;
+			//if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type) //not dirt or both dirt
+			if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type) //not platform or both platform
+				left = true;
 		}
 		//Check right
-		if(i + 1 < background.length && background[i+1][j] != null && (w.type != Wall.DIRT || background[i+1][j].type == w.type)){ //tile exists
-			if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type) //not dirt or both dirt
-				if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type) //not platform or both platform
-					right = true;
+		if(i + 1 < background.length && background[i+1][j] != null){ //tile exists
+			//if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type) //not dirt or both dirt
+			if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type) //not platform or both platform
+				right = true;
 		}
 		//Check up
-		if(j - 1 >= 0 && background[i][j-1] != null && ( w.type != Wall.DIRT || background[i][j-1].type == w.type)){ // exists and not dirt or both dirt
+		if(j - 1 >= 0 && background[i][j-1] != null){ // Tile exists
+			//if(( w.type != Wall.DIRT || background[i][j-1].type == w.type)) //not dirt or both dirt
 			if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE) //not eye or both eye
 				up = true;
 		}
@@ -517,19 +542,22 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		//check normal walls
 		//Check left
 		if(i - 1 >= 0 && wall[i-1][j] != null){ //exists
-			if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //not dirt or both dirt
-				if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //not platform or both platform
-					left = true;
+			//if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //not dirt or both dirt
+			if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //not platform or both platform
+				left = true;
 		}
 		//Check right
-		if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){ //exists and not dirt or both dirt
+		if(i + 1 < wall.length && wall[i+1][j] != null){ //exists
+			//if((w.type != Wall.DIRT || wall[i+1][j].type == w.type)) //not dirt or both dirt
 			if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)  //not platform or both platform
 				right = true;
 		}
 		//Check up
-		if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //exists and not dirt or both dirt
-			if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
-				up = true;
+		if(j - 1 >= 0 && wall[i][j-1] != null){ //exists
+			//if(( w.type != Wall.DIRT || wall[i][j-1].type == w.type)) //not dirt or both dirt
+			if(w.type != Wall.PLATFORM && wall[i][j-1].type != Wall.PLATFORM)  //not platform
+				if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
+					up = true;
 		}
 		if(j + 1 < wall[i].length && wall[i][j+1] != null){ //exists
 			if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE) //not eye or both eye
@@ -683,34 +711,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		System.out.println("Level saved to: " + name);
 	}
 
-	//Draw the current tile and tiles touching it
-	private void drawLocalWalls(Point p, Wall w){
-		drawSingleWall(p.x, p.y);
-		drawSingleWall(p.x-1, p.y);
-		drawSingleWall(p.x+1,p.y);
-		drawSingleWall(p.x, p.y-1);
-		drawSingleWall(p.x, p.y+1);
-		this.repaint();
-	}
-
-	//Draw the current background tile and tiles touching it
-	private void drawLocalBackgrounds(Point p, Wall w){
-		drawSingleBackground(p.x, p.y);
-		drawSingleBackground(p.x-1, p.y); //left
-		drawSingleBackground(p.x+1,p.y); //right
-		drawSingleBackground(p.x, p.y-1); //up
-		drawSingleBackground(p.x, p.y+1); //down
-		this.repaint();
-	}
-
-	//Load the image for a tile
-	private JLabel loadSingleTile(int x, int y, BufferedImage spritesheet){
-		BufferedImage sprite = spritesheet.getSubimage(x*Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
-		JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
-		image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
-		return image;
-	}
-
 	//Add and draw the currently selected item to the level
 	private void drawCurrentItem(){
 
@@ -750,6 +750,9 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 			//Draw the new tile and surrounding tiles
 			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
+
+			//Draw the new background and surrounding backgrounds
+			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
 		}
 
 		//Add background if selected
@@ -773,14 +776,98 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				else{
 					background[currCoords.x][currCoords.y] = new Wall(currCoords.x, currCoords.y, type, Wall.BACKGROUND_WALL); 
 					this.add(background[currCoords.x][currCoords.y], BGWALL_DEPTH);
-					drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
 				}
+
+				//draw the new background and surrounding backgrounds
+				drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
 			}catch(NullPointerException e){
 				System.err.println("Null pointer: Background " + currCoords.x + " " + currCoords.y);
 			}
 
 			this.repaint();
 		}
+
+		//Add entity if selected
+		else if(drawTypes[currentType].equals(ENTITY_CODE)){
+			Entity newEntity;
+
+			//cancel the action if the tile is already occupied
+			if(checkCollision(ghostImage) != null)
+				return;
+
+			if(entityMaterials[currentMaterial].equals(SPIKE_CODE)){
+				newEntity = new SpikeTrap( currCoords.x, currCoords.y, 0 );
+				entity.add(newEntity);
+				this.add(newEntity, ENTITY_DEPTH, 1 );
+			}
+			/*else if(splitline[1].equals(WATER_CODE)){
+				newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
+				fluids.add(newEntity);
+				this.add(newEntity, FLUID_DEPTH, 0);
+			}*/
+		}
+	}
+
+	//Delete the tile at the mouse's location
+	private void eraseCurrentTile(){
+		if(drawTypes[currentType] == WALL_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
+				return;
+	
+			//if there's no wall here, cancel the action
+			if(wall[currCoords.x][currCoords.y] == null) return;
+			this.remove(wall[currCoords.x][currCoords.y]);
+			wall[currCoords.x][currCoords.y] = null;
+			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
+		}
+	
+		if(drawTypes[currentType] == BACKGROUND_CODE){
+			//Cancel the action if the mouse is out of bounds
+			if(currCoords.x < 0 || currCoords.x > background.length || currCoords.y < 0 || currCoords.y > background[currCoords.x].length)
+				return;
+	
+			//if there's no wall here, cancel the action
+			if(background[currCoords.x][currCoords.y] == null) return;
+			
+			//Remove the tile
+			this.remove(background[currCoords.x][currCoords.y]);
+			background[currCoords.x][currCoords.y] = null;
+			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
+		}
+		
+		if(drawTypes[currentType] == ENTITY_CODE){
+			//See if there is an entity at the current location
+			Entity remove = checkCollision(ghostImage);
+			
+			//If nothing is there, cancel the action
+			if(remove == null) return;
+			
+			//Remove the entity
+			this.remove(remove);
+			entity.remove(remove);
+		}
+	
+		this.repaint();
+	}
+
+	//Check entity collision
+	public Entity checkCollision(JComponent e1){
+		Rectangle e1rect = e1.getVisibleRect();
+		e1rect.setLocation(e1.getLocation());
+		Rectangle e2rect;
+		for(Entity e2: entity){
+			if(e1 == e2) continue; //don't check if it hit itself
+
+			e2rect = e2.getVisibleRect();
+			e2rect.setLocation(e2.getLocation());
+
+			if(e1rect.intersects(e2rect)){
+				return e2;
+			}
+		}
+
+		return null;
 	}
 
 	//Return the integer value of a wall material
@@ -825,35 +912,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		}
 
 		return type;
-	}
-
-	//Delete the tile at the mouse's location
-	private void eraseCurrentTile(){
-		if(drawTypes[currentType] == WALL_CODE){
-			//Cancel the action if the mouse is out of bounds
-			if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
-				return;
-
-			//if there's no wall here, cancel the action
-			if(wall[currCoords.x][currCoords.y] == null) return;
-			this.remove(wall[currCoords.x][currCoords.y]);
-			wall[currCoords.x][currCoords.y] = null;
-			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
-		}
-
-		if(drawTypes[currentType] == BACKGROUND_CODE){
-			//Cancel the action if the mouse is out of bounds
-			if(currCoords.x < 0 || currCoords.x > background.length || currCoords.y < 0 || currCoords.y > background[currCoords.x].length)
-				return;
-
-			//if there's no wall here, cancel the action
-			if(background[currCoords.x][currCoords.y] == null) return;
-			this.remove(background[currCoords.x][currCoords.y]);
-			background[currCoords.x][currCoords.y] = null;
-			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
-		}
-
-		this.repaint();
 	}
 
 	//Move the camera based on keyboard input
@@ -901,6 +959,14 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			//Ghost background tiles
 			if(this.getComponentCountInLayer(new Integer(BGWALL_DEPTH+1)) > 1){
 				java.awt.Component toRemove[] = this.getComponentsInLayer(new Integer(BGWALL_DEPTH+1));
+				for(java.awt.Component c: toRemove){
+					if(c != ghostImage)
+						this.remove(c);
+				}
+			}
+			//Ghost Entity tiles
+			if(this.getComponentCountInLayer(new Integer(ENTITY_DEPTH+1)) > 1){
+				java.awt.Component toRemove[] = this.getComponentsInLayer(new Integer(ENTITY_DEPTH+1));
 				for(java.awt.Component c: toRemove){
 					if(c != ghostImage)
 						this.remove(c);
@@ -984,6 +1050,39 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			this.add(ghostImage, new Integer(BGWALL_DEPTH + 1));
 			this.repaint();
 		}
+		else if(drawTypes[currentType] == ENTITY_CODE){
+			this.remove(ghostImage);
+			if(entityMaterials[currentMaterial].equals(SPIKE_CODE)){
+				ghostImage = loadEntityImage("spike");
+			}
+
+			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
+			ghostImage.setLocation(currCoords.x * Wall.TILE_WIDTH, currCoords.y * Wall.TILE_HEIGHT);
+			this.add(ghostImage, new Integer(ENTITY_DEPTH + 1));
+			this.repaint();
+		}
+	}
+
+	//Load an image for an entity
+	protected JLabel loadEntityImage(String path){
+		java.net.URL imgURL = getClass().getResource("img/" + path + ".png");
+
+		try {
+			BufferedImage bi = ImageIO.read(imgURL);
+			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
+			image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			return image;
+		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
+
+		return null;
+	}
+
+	//Load the image for a tile
+	private JLabel loadSingleTile(int x, int y, BufferedImage spritesheet){
+		BufferedImage sprite = spritesheet.getSubimage(x*Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+		JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
+		image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+		return image;
 	}
 
 	private void openEditorMenu(boolean b){
@@ -1088,8 +1187,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			}
 			if(drawTypes[currentType] == WALL_CODE && currentMaterial > wallMaterials.length-1)
 				currentMaterial = wallMaterials.length-1;
+
 			else if(drawTypes[currentType] == BACKGROUND_CODE && currentMaterial > backgroundMaterials.length-1)
 				currentMaterial = backgroundMaterials.length-1;
+
+			else if(drawTypes[currentType] == ENTITY_CODE && currentMaterial > entityMaterials.length - 1)
+				currentMaterial = entityMaterials.length-1;
 		}
 		else{
 			if(drawTypes[currentType] == WALL_CODE){
@@ -1102,6 +1205,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				currentMaterial = (e.getWheelRotation() + currentMaterial) % backgroundMaterials.length;
 				while(currentMaterial < 0){
 					currentMaterial += backgroundMaterials.length;
+				}
+			}
+			if(drawTypes[currentType] == ENTITY_CODE){
+				currentMaterial = (e.getWheelRotation() + currentMaterial) % entityMaterials.length;
+				while(currentMaterial < 0){
+					currentMaterial += entityMaterials.length;
 				}
 			}
 		}

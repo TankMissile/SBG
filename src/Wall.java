@@ -41,7 +41,7 @@ public class Wall extends JPanel {
 	public boolean dropthrough = false;
 
 
-	public int tile_type = 0;
+	public int tile_type = 0; //wall or background?
 	public static final int
 	WALL = 0,
 	BACKGROUND_WALL = 1;

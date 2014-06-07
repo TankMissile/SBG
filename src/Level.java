@@ -85,7 +85,7 @@ public class Level extends JLayeredPane{
 			int x, y, t; //X and Y positions for the component loaded, and the wall material if applicable
 
 			Entity newEntity = null; //Stores a new entity to be loaded
-			
+
 			//Find the dimensions of the level according to the file, abort if not found
 			while((readline = br.readLine()) != null){
 
@@ -97,13 +97,13 @@ public class Level extends JLayeredPane{
 					break;
 				}
 			}
-			
+
 			//If either width or height are invalid or not found, cancel level loading
 			if(width == 0 || height == 0){
 				System.err.println("Level dimensions could not be loaded correctly, aborting...");
 				return;
 			}
-			
+
 			//Reload the level file to start from line 1
 			istream = getClass().getResourceAsStream("/level/"+path+".lvl");
 			br = new BufferedReader(new InputStreamReader(istream));
@@ -119,14 +119,14 @@ public class Level extends JLayeredPane{
 			 ********************************/
 			//Update preloader
 			ClientWindow.preloader.updateCurrentStatus("Reading Level File");
-			
+
 			//Read entire level line by line
 			while((readline = br.readLine()) != null){
 				splitline = readline.split(" "); //split the line by spaces
 
-				
+
 				//First word on the line determines the type of object to be added
-				
+
 				//////////////////////
 				//Non-Passable walls//
 				//////////////////////
@@ -134,7 +134,7 @@ public class Level extends JLayeredPane{
 					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
 					y = Integer.parseInt(splitline[3]); //fourth word defines y coordinate
 					t = Wall.NONE; //material, defaults to none
-					
+
 					//Second word defines material
 					if(splitline[1].equals(STONE_CODE)){
 						t = Wall.STONE;
@@ -148,15 +148,15 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(EYE_CODE)){
 						t = Wall.EYE;
 					}
-					
+
 					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Wall at " + x + " " + y);
-					
+
 					//Create and add the wall to the level
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], WALL_DEPTH);
 				}
-				
+
 				//////////////////
 				//Passable Walls//
 				//////////////////
@@ -164,20 +164,20 @@ public class Level extends JLayeredPane{
 					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
 					y = Integer.parseInt(splitline[3]); //fourth word defines y coordinate
 					t = Wall.NONE; //material, defaults to none
-					
+
 					//Second word defines material
 					if(splitline[1].equals(PLATFORM_CODE)){
 						t = Wall.PLATFORM;
 					}
-					
+
 					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Platform at " + x + " " + y);
-					
+
 					//Create and add the wall to the level
 					wall[x][y] = new Wall(x, y, t);
 					this.add(wall[x][y], PASSABLE_WALL_DEPTH);
 				}
-				
+
 				///////////////
 				//Backgrounds//
 				///////////////
@@ -185,7 +185,7 @@ public class Level extends JLayeredPane{
 					x = Integer.parseInt(splitline[2]); //third word defines x coordinate
 					y = Integer.parseInt(splitline[3]); //fourth word defines the y coordinate
 					t = Wall.NONE; //material, defaults to none
-					
+
 					//Second word defines material
 					if(splitline[1].equals(STONE_CODE)){
 						t = Wall.STONE;
@@ -202,22 +202,22 @@ public class Level extends JLayeredPane{
 					else if(splitline[1].equals(PLATFORM_CODE)){
 						t = Wall.PLATFORM;
 					}
-					
+
 					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Background Tile at " + x + " " + y);
-					
+
 					//Create and add the background tile to the level
 					background[x][y] = new Wall(x, y, t, Wall.BACKGROUND_WALL);
 					this.add(background[x][y], BGWALL_DEPTH);
 				}
-				
+
 				//////////////
 				//The Player//
 				//////////////
 				else if(splitline[0].equals(PLAYER_CODE)){
 					//Tell the preloader what's being added
 					ClientWindow.preloader.updateCurrentStatus("Adding Player");
-					
+
 					//get the tile coordinates and center the player in them
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2; //Second word defines x coordinate
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT; //Third word defines y coordinate
@@ -226,7 +226,7 @@ public class Level extends JLayeredPane{
 					player = new Player(new Point(x, y), this);
 					this.add(player, ENTITY_DEPTH, 0);
 				}
-				
+
 				///////////////////////
 				//Non-player Entities//
 				///////////////////////
@@ -246,7 +246,7 @@ public class Level extends JLayeredPane{
 						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
-				
+
 				////////////////////
 				//Background Music//
 				////////////////////
@@ -543,18 +543,20 @@ public class Level extends JLayeredPane{
 				//check background walls
 				//Check left
 				if(i - 1 >= 0 && background[i-1][j] != null){ //tile exists
-					if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type) //not dirt or both dirt
-						if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type) //not platform or both platform
-							left = true;
+					//if((w.type != Wall.DIRT && background[i-1][j].type != Wall.DIRT) || background[i-1][j].type == w.type) //not dirt or both dirt
+					if((w.type != Wall.PLATFORM && background[i-1][j].type != Wall.PLATFORM) || background[i-1][j].type == w.type) //not platform or both platform
+						left = true;
 				}
 				//Check right
-				if(i + 1 < background.length && background[i+1][j] != null/* && (w.type != Wall.DIRT || background[i+1][j].type == w.type)*/){ //tile exists
-					if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type) //not dirt or both dirt
-						if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type) //not platform or both platform
-							right = true;
+				if(i + 1 < background.length && background[i+1][j] != null){ //tile exists
+					//if((w.type != Wall.DIRT && background[i+1][j].type != Wall.DIRT) || background[i+1][j].type == w.type) //not dirt or both dirt
+					if((w.type != Wall.PLATFORM && background[i+1][j].type != Wall.PLATFORM) || background[i+1][j].type == w.type) //not platform or both platform
+						right = true;
 				}
 				//Check up
-				if(j - 1 >= 0 && background[i][j-1] != null && ( w.type != Wall.DIRT || background[i][j-1].type == w.type)){ // exists and not dirt or both dirt
+				if(j - 1 >= 0 && background[i][j-1] != null){ // Tile exists
+					//if(( w.type != Wall.DIRT || background[i][j-1].type == w.type)) //not dirt or both dirt
+					if((w.type != Wall.PLATFORM && background[i][j-1].type != Wall.PLATFORM) || background[i][j-1].type == w.type)  //not platform or both platform
 					if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE) //not eye or both eye
 						up = true;
 				}
@@ -567,19 +569,22 @@ public class Level extends JLayeredPane{
 				//check normal walls
 				//Check left
 				if(i - 1 >= 0 && wall[i-1][j] != null){ //exists
-					if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //not dirt or both dirt
-						if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //not platform or both platform
-							left = true;
+					//if((w.type != Wall.DIRT && wall[i-1][j].type != Wall.DIRT) || wall[i-1][j].type == w.type) //not dirt or both dirt
+					if((w.type != Wall.PLATFORM && wall[i-1][j].type != Wall.PLATFORM) || wall[i-1][j].type == w.type) //not platform or both platform
+						left = true;
 				}
 				//Check right
-				if(i + 1 < wall.length && wall[i+1][j] != null && (w.type != Wall.DIRT || wall[i+1][j].type == w.type)){ //exists and not dirt or both dirt
+				if(i + 1 < wall.length && wall[i+1][j] != null){ //exists
+					//if((w.type != Wall.DIRT || wall[i+1][j].type == w.type)) //not dirst or both dirt
 					if((w.type != Wall.PLATFORM && wall[i+1][j].type != Wall.PLATFORM) || wall[i+1][j].type == w.type)  //not platform or both platform
 						right = true;
 				}
 				//Check up
-				if(j - 1 >= 0 && wall[i][j-1] != null && ( w.type != Wall.DIRT || wall[i][j-1].type == w.type)){ //exists and not dirt or both dirt
-					if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
-						up = true;
+				if(j - 1 >= 0 && wall[i][j-1] != null){ //exists
+					//if(( w.type != Wall.DIRT || wall[i][j-1].type == w.type)) //not dirt or both dirt
+					if((w.type != Wall.PLATFORM && wall[i][j-1].type != Wall.PLATFORM) || wall[i+1][j-1].type == w.type)  //not platform or both platform
+						if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
+							up = true;
 				}
 				if(j + 1 < wall[i].length && wall[i][j+1] != null){ //exists
 					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE) //not eye or both eye
