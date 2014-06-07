@@ -303,6 +303,9 @@ public class Level extends JLayeredPane{
 		//////////////
 		if(bgm != null)
 			Sound.music(bgm);
+		
+		//Center the camera on the player, in case he starts off-screen
+		ClientWindow.centerCameraOnPlayer();
 
 		//Unpause the player
 		player.pause(false);
@@ -582,10 +585,11 @@ public class Level extends JLayeredPane{
 				//Check up
 				if(j - 1 >= 0 && wall[i][j-1] != null){ //exists
 					//if(( w.type != Wall.DIRT || wall[i][j-1].type == w.type)) //not dirt or both dirt
-					if((w.type != Wall.PLATFORM && wall[i][j-1].type != Wall.PLATFORM) || wall[i+1][j-1].type == w.type)  //not platform or both platform
+					if((w.type != Wall.PLATFORM && wall[i][j-1].type != Wall.PLATFORM) || wall[i][j-1].type == w.type)  //not platform or both platform
 						if(w.type != Wall.EYE || wall[i][j-1].type == Wall.EYE) //not eye or both eye
 							up = true;
 				}
+				//Check down
 				if(j + 1 < wall[i].length && wall[i][j+1] != null){ //exists
 					if(w.type != Wall.EYE || wall[i][j+1].type == Wall.EYE) //not eye or both eye
 						down = true;

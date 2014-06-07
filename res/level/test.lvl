@@ -1,5 +1,6 @@
 di 3000 1400
-pl 10 3
+mu Zipper
+pl 72 32
 wa st 0 10
 pw pt 0 15
 wa dr 0 17

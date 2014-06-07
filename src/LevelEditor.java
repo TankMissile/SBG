@@ -59,7 +59,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	int currentMaterial = 0;
 
 	//Current tile type being drawn
-	public static final String drawTypes[] = { WALL_CODE, BACKGROUND_CODE, ENTITY_CODE };
+	public static final String drawTypes[] = { WALL_CODE, BACKGROUND_CODE, ENTITY_CODE, PLAYER_CODE };
 	int currentType = 0;
 
 	private boolean drawing = false; //Is the user drawing tiles?
@@ -87,6 +87,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	public HealthBar healthbar; //The player's health bar
 	private EditorMenu menu; //The pause menu (opened with esc)
 	String savename; //Name of the file to be saved
+	private String level_music = null;
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
@@ -210,16 +211,12 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				}
 				//The Player
 				else if(splitline[0].equals(PLAYER_CODE)){
-					//System.out.println("Adding Player...");
 					x = Integer.parseInt(splitline[1])*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2;
 					y = Integer.parseInt(splitline[2])*Wall.TILE_HEIGHT;
 
-					player = new JLabel("p");
+					player = loadEntityImage(32, 32, "player");
 					player.setSize(new Dimension(32, 32));
 					player.setLocation(x, y);
-					player.setOpaque(true);
-					player.setVisible(true);;
-					player.setBackground(new Color(120,150,255));
 					this.add(player, ENTITY_DEPTH, 0);
 					ClientWindow.preloader.updateCurrentStatus("Adding Player");
 				}
@@ -239,10 +236,11 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 						this.add(newEntity, FLUID_DEPTH, 0);
 					}
 				}
-				/*//Background Music
+				//Background Music
 				else if(splitline[0].equals(MUSIC_CODE)){
-					bgm = splitline[1];
-				}*/
+					level_music = splitline[1];
+					System.out.println(level_music);
+				}
 			}
 
 			//Draw the background
@@ -278,6 +276,126 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			Sound.music(bgm);
 
 		new Thread(new Runnable(){ @Override public void run() { panCamera();  } }).start();
+	}
+
+	//Save all properties of the level
+	void saveLevel(String name){
+		try {
+			File file = new File("res/level/" + name + ".lvl");
+			if(!file.exists()){
+				file.createNewFile();
+			}
+	
+			FileWriter fw = null;
+			fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+	
+			String writeline = null;
+	
+			writeline = DIMENSION_CODE + " " + width + " " + height;
+			bw.write(writeline);
+			bw.newLine();
+			
+			if(level_music != null){
+				writeline = MUSIC_CODE + " " + level_music;
+				bw.write(writeline);
+				bw.newLine();
+			}
+	
+			writeline = PLAYER_CODE + " " + player.getLocation().x/Wall.TILE_WIDTH + " " + player.getLocation().y/Wall.TILE_HEIGHT;
+			bw.write(writeline);
+			bw.newLine();
+	
+			for(int i = 0; i < wall.length; i++ ){
+				for(int j = 0; j < wall[i].length; j++){
+					if(wall[i][j] == null) continue; //skip empty spaces
+	
+					writeline = WALL_CODE;
+	
+					switch(wall[i][j].type){
+					case Wall.STONE:
+						writeline += " " + STONE_CODE;
+						break;
+					case Wall.DIRT:
+						writeline += " " + DIRT_CODE;
+						break;
+					case Wall.WOOD:
+						writeline += " " + WOOD_CODE;
+						break;
+					case Wall.EYE:
+						writeline += " " + EYE_CODE;
+						break;
+					case Wall.PLATFORM:
+						writeline = PASSABLE_WALL_CODE + " " + PLATFORM_CODE;
+						break;
+					default:
+						System.err.println("Invalid tile at: " + i + ", " + j);
+						continue;
+					}
+					writeline += " " + i + " " + j;
+					bw.write(writeline);
+					bw.newLine();
+				}
+			}
+	
+			for(int i = 0; i < background.length; i++ ){
+				for(int j = 0; j < background[i].length; j++){
+					if(background[i][j] == null) continue; //skip empty spaces
+	
+					writeline = BACKGROUND_CODE;
+	
+					switch(background[i][j].type){
+					case Wall.STONE:
+						writeline += " " + STONE_CODE;
+						break;
+					case Wall.DIRT:
+						writeline += " " + DIRT_CODE;
+						break;
+					case Wall.WOOD:
+						writeline += " " + WOOD_CODE;
+						break;
+					case Wall.EYE:
+						writeline += " " + EYE_CODE;
+						break;
+					case Wall.PLATFORM:
+						writeline += " " + PLATFORM_CODE;
+						break;
+					default:
+						System.err.println("Invalid tile at: " + i + ", " + j);
+						continue;
+					}
+					writeline += " " + i + " " + j;
+					bw.write(writeline);
+					bw.newLine();
+				}
+			}
+	
+			for(Entity e : entity){
+				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+				if(e.entity_code.equals(SPIKE_CODE)){
+					writeline += " " + ((SpikeTrap)e).rotation;
+				}
+				bw.write(writeline);
+				bw.newLine();
+			}
+	
+			for(Entity e: fluids){
+				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+				if(e.entity_code == WATER_CODE)
+					writeline += " " + e.w + " " + e.h;
+				bw.write(writeline);
+				bw.newLine();
+			}
+	
+			//writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
+			//bw.write(writeline);
+	
+	
+			bw.flush();
+			bw.close();
+		} catch (IOException e) { e.printStackTrace(); }
+	
+		System.out.println("Level saved to: " + name);
 	}
 
 	//Remove an Entity
@@ -597,120 +715,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		w.loadTileBackground(x, y);
 	}
 
-	//Save all properties of the level
-	void saveLevel(String name){
-		try {
-			File file = new File("res/level/" + name + ".lvl");
-			if(!file.exists()){
-				file.createNewFile();
-			}
-
-			FileWriter fw = null;
-			fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-
-			String writeline = null;
-
-			writeline = DIMENSION_CODE + " " + width + " " + height;
-			bw.write(writeline);
-			bw.newLine();
-
-			writeline = PLAYER_CODE + " " + player.getLocation().x/Wall.TILE_WIDTH + " " + player.getLocation().y/Wall.TILE_HEIGHT;
-			bw.write(writeline);
-			bw.newLine();
-
-			for(int i = 0; i < wall.length; i++ ){
-				for(int j = 0; j < wall[i].length; j++){
-					if(wall[i][j] == null) continue; //skip empty spaces
-
-					writeline = WALL_CODE;
-
-					switch(wall[i][j].type){
-					case Wall.STONE:
-						writeline += " " + STONE_CODE;
-						break;
-					case Wall.DIRT:
-						writeline += " " + DIRT_CODE;
-						break;
-					case Wall.WOOD:
-						writeline += " " + WOOD_CODE;
-						break;
-					case Wall.EYE:
-						writeline += " " + EYE_CODE;
-						break;
-					case Wall.PLATFORM:
-						writeline = PASSABLE_WALL_CODE + " " + PLATFORM_CODE;
-						break;
-					default:
-						System.err.println("Invalid tile at: " + i + ", " + j);
-						continue;
-					}
-					writeline += " " + i + " " + j;
-					bw.write(writeline);
-					bw.newLine();
-				}
-			}
-
-			for(int i = 0; i < background.length; i++ ){
-				for(int j = 0; j < background[i].length; j++){
-					if(background[i][j] == null) continue; //skip empty spaces
-
-					writeline = BACKGROUND_CODE;
-
-					switch(background[i][j].type){
-					case Wall.STONE:
-						writeline += " " + STONE_CODE;
-						break;
-					case Wall.DIRT:
-						writeline += " " + DIRT_CODE;
-						break;
-					case Wall.WOOD:
-						writeline += " " + WOOD_CODE;
-						break;
-					case Wall.EYE:
-						writeline += " " + EYE_CODE;
-						break;
-					case Wall.PLATFORM:
-						writeline += " " + PLATFORM_CODE;
-						break;
-					default:
-						System.err.println("Invalid tile at: " + i + ", " + j);
-						continue;
-					}
-					writeline += " " + i + " " + j;
-					bw.write(writeline);
-					bw.newLine();
-				}
-			}
-
-			for(Entity e : entity){
-				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
-				if(e.entity_code.equals(SPIKE_CODE)){
-					writeline += " " + ((SpikeTrap)e).rotation;
-				}
-				bw.write(writeline);
-				bw.newLine();
-			}
-
-			for(Entity e: fluids){
-				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
-				if(e.entity_code == WATER_CODE)
-					writeline += " " + e.w + " " + e.h;
-				bw.write(writeline);
-				bw.newLine();
-			}
-
-			//writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
-			//bw.write(writeline);
-
-
-			bw.flush();
-			bw.close();
-		} catch (IOException e) { e.printStackTrace(); }
-
-		System.out.println("Level saved to: " + name);
-	}
-
 	//Add and draw the currently selected item to the level
 	private void drawCurrentItem(){
 
@@ -805,6 +809,16 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				fluids.add(newEntity);
 				this.add(newEntity, FLUID_DEPTH, 0);
 			}*/
+		}
+		
+		//Move player if selected
+		else if(drawTypes[currentType].equals(PLAYER_CODE)){
+			if(player == null){
+				player = loadEntityImage(32, 32, "player");
+				player.setSize(new Dimension(32, 32));
+			}
+			
+			player.setLocation(currCoords.x*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2, currCoords.y*Wall.TILE_HEIGHT);
 		}
 	}
 
@@ -1007,8 +1021,11 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 
 	//Load the image for the ghost tile
 	private void getGhostImage(){
+		//Remove the ghost image, to avoid duplicates
+		this.remove(ghostImage);
+		
+		
 		if(drawTypes[currentType] == WALL_CODE){
-			this.remove(ghostImage);
 			if(wallMaterials[currentMaterial] == DIRT_CODE){
 				ghostImage = loadSingleTile(7, 3, Wall.wall);
 			}
@@ -1031,7 +1048,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			this.repaint();
 		}
 		else if(drawTypes[currentType] == BACKGROUND_CODE){
-			this.remove(ghostImage);
 			if(backgroundMaterials[currentMaterial] == DIRT_CODE){
 				ghostImage = loadSingleTile(7, 3, Wall.background);
 			}
@@ -1051,9 +1067,8 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			this.repaint();
 		}
 		else if(drawTypes[currentType] == ENTITY_CODE){
-			this.remove(ghostImage);
 			if(entityMaterials[currentMaterial].equals(SPIKE_CODE)){
-				ghostImage = loadEntityImage("spike");
+				ghostImage = loadEntityImage(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, "spike");
 			}
 
 			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
@@ -1061,16 +1076,25 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			this.add(ghostImage, new Integer(ENTITY_DEPTH + 1));
 			this.repaint();
 		}
+		else if(drawTypes[currentType] == PLAYER_CODE){
+			ghostImage = loadEntityImage(32, 32, "player");
+
+
+			ghostImage.setSize(new Dimension(32, 32));
+			ghostImage.setLocation(currCoords.x * Wall.TILE_WIDTH + 4, currCoords.y * Wall.TILE_HEIGHT);
+			this.add(ghostImage, new Integer(ENTITY_DEPTH + 1));
+			this.repaint();
+		}
 	}
 
 	//Load an image for an entity
-	protected JLabel loadEntityImage(String path){
+	protected JLabel loadEntityImage(int w, int h, String path){
 		java.net.URL imgURL = getClass().getResource("img/" + path + ".png");
 
 		try {
 			BufferedImage bi = ImageIO.read(imgURL);
-			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, Image.SCALE_SMOOTH)));
-			image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			JLabel image = new JLabel(new ImageIcon(bi.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
+			image.setSize(w, h);
 			return image;
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 
@@ -1141,6 +1165,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	public void keyReleased(KeyEvent e) {
 		int key = e.getKeyCode();
 
+		//Horizontal movement
 		if (Configs.isLeftKey(key))
 		{
 			move_left = false;
@@ -1148,6 +1173,8 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		else if(Configs.isRightKey(key)){
 			move_right = false;
 		}
+		
+		//Vertical movement
 		if(Configs.isJumpKey(key)){
 			move_up = false;
 		}
@@ -1155,6 +1182,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			move_down = false;
 		}
 
+		//Open/close the menu
 		if(Configs.isMenuKey(key)){
 			if(!menuOpen){
 				openEditorMenu(true);
@@ -1162,6 +1190,11 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			else{
 				openEditorMenu(false);
 			}
+		}
+		
+		//Save the level
+		if(e.isControlDown() && key == 0x53){ //control+S
+			saveLevel(savename);
 		}
 	}
 
@@ -1214,7 +1247,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				}
 			}
 		}
-
+		
 		getGhostImage();
 	}
 }
