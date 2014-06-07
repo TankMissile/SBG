@@ -285,33 +285,33 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			if(!file.exists()){
 				file.createNewFile();
 			}
-	
+
 			FileWriter fw = null;
 			fw = new FileWriter(file);
 			BufferedWriter bw = new BufferedWriter(fw);
-	
+
 			String writeline = null;
-	
+
 			writeline = DIMENSION_CODE + " " + width + " " + height;
 			bw.write(writeline);
 			bw.newLine();
-			
+
 			if(level_music != null){
 				writeline = MUSIC_CODE + " " + level_music;
 				bw.write(writeline);
 				bw.newLine();
 			}
-	
+
 			writeline = PLAYER_CODE + " " + player.getLocation().x/Wall.TILE_WIDTH + " " + player.getLocation().y/Wall.TILE_HEIGHT;
 			bw.write(writeline);
 			bw.newLine();
-	
+
 			for(int i = 0; i < wall.length; i++ ){
 				for(int j = 0; j < wall[i].length; j++){
 					if(wall[i][j] == null) continue; //skip empty spaces
-	
+
 					writeline = WALL_CODE;
-	
+
 					switch(wall[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -337,13 +337,13 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 					bw.newLine();
 				}
 			}
-	
+
 			for(int i = 0; i < background.length; i++ ){
 				for(int j = 0; j < background[i].length; j++){
 					if(background[i][j] == null) continue; //skip empty spaces
-	
+
 					writeline = BACKGROUND_CODE;
-	
+
 					switch(background[i][j].type){
 					case Wall.STONE:
 						writeline += " " + STONE_CODE;
@@ -369,7 +369,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 					bw.newLine();
 				}
 			}
-	
+
 			for(Entity e : entity){
 				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 				if(e.entity_code.equals(SPIKE_CODE)){
@@ -378,7 +378,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				bw.write(writeline);
 				bw.newLine();
 			}
-	
+
 			for(Entity e: fluids){
 				writeline = ENTITY_CODE + " " + e.entity_code + " " + ((e.getLocation().x - e.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((e.getLocation().y - e.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 				if(e.entity_code == WATER_CODE)
@@ -386,15 +386,15 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				bw.write(writeline);
 				bw.newLine();
 			}
-	
+
 			//writeline = PLAYER_CODE + " " + ((player.getLocation().x - player.getLocation().x%Wall.TILE_WIDTH)/Wall.TILE_WIDTH) + " " + ((player.getLocation().y - player.getLocation().y%Wall.TILE_HEIGHT)/Wall.TILE_HEIGHT);
 			//bw.write(writeline);
-	
-	
+
+
 			bw.flush();
 			bw.close();
 		} catch (IOException e) { e.printStackTrace(); }
-	
+
 		System.out.println("Level saved to: " + name);
 	}
 
@@ -810,14 +810,14 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				this.add(newEntity, FLUID_DEPTH, 0);
 			}*/
 		}
-		
+
 		//Move player if selected
 		else if(drawTypes[currentType].equals(PLAYER_CODE)){
 			if(player == null){
 				player = loadEntityImage(32, 32, "player");
 				player.setSize(new Dimension(32, 32));
 			}
-			
+
 			player.setLocation(currCoords.x*Wall.TILE_WIDTH + (Wall.TILE_WIDTH-Player.NORMALWIDTH)/2, currCoords.y*Wall.TILE_HEIGHT);
 		}
 	}
@@ -828,40 +828,40 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			//Cancel the action if the mouse is out of bounds
 			if(currCoords.x < 0 || currCoords.x > wall.length || currCoords.y < 0 || currCoords.y > wall[currCoords.x].length)
 				return;
-	
+
 			//if there's no wall here, cancel the action
 			if(wall[currCoords.x][currCoords.y] == null) return;
 			this.remove(wall[currCoords.x][currCoords.y]);
 			wall[currCoords.x][currCoords.y] = null;
 			drawLocalWalls(currCoords, wall[currCoords.x][currCoords.y]);
 		}
-	
+
 		if(drawTypes[currentType] == BACKGROUND_CODE){
 			//Cancel the action if the mouse is out of bounds
 			if(currCoords.x < 0 || currCoords.x > background.length || currCoords.y < 0 || currCoords.y > background[currCoords.x].length)
 				return;
-	
+
 			//if there's no wall here, cancel the action
 			if(background[currCoords.x][currCoords.y] == null) return;
-			
+
 			//Remove the tile
 			this.remove(background[currCoords.x][currCoords.y]);
 			background[currCoords.x][currCoords.y] = null;
 			drawLocalBackgrounds(currCoords, background[currCoords.x][currCoords.y]);
 		}
-		
+
 		if(drawTypes[currentType] == ENTITY_CODE){
 			//See if there is an entity at the current location
 			Entity remove = checkCollision(ghostImage);
-			
+
 			//If nothing is there, cancel the action
 			if(remove == null) return;
-			
+
 			//Remove the entity
 			this.remove(remove);
 			entity.remove(remove);
 		}
-	
+
 		this.repaint();
 	}
 
@@ -1023,8 +1023,8 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	private void getGhostImage(){
 		//Remove the ghost image, to avoid duplicates
 		this.remove(ghostImage);
-		
-		
+
+
 		if(drawTypes[currentType] == WALL_CODE){
 			if(wallMaterials[currentMaterial] == DIRT_CODE){
 				ghostImage = loadSingleTile(7, 3, Wall.wall);
@@ -1147,17 +1147,23 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 
-		if (Configs.isLeftKey(key)){
-			move_left = true;
+		if(e.isControlDown()){
+			if(key == 0x53) //Ctrl+S
+				saveLevel(savename);
 		}
-		else if(Configs.isRightKey(key)){
-			move_right = true;
-		}
-		else if(Configs.isJumpKey(key)){
-			move_up = true;
-		}
-		else if(Configs.isCrouchKey(key)){
-			move_down = true;
+		else{
+			if (Configs.isLeftKey(key)){
+				move_left = true;
+			}
+			else if(Configs.isRightKey(key)){
+				move_right = true;
+			}
+			else if(Configs.isJumpKey(key)){
+				move_up = true;
+			}
+			else if(Configs.isCrouchKey(key)){
+				move_down = true;
+			}
 		}
 	}
 
@@ -1173,7 +1179,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 		else if(Configs.isRightKey(key)){
 			move_right = false;
 		}
-		
+
 		//Vertical movement
 		if(Configs.isJumpKey(key)){
 			move_up = false;
@@ -1190,11 +1196,6 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			else{
 				openEditorMenu(false);
 			}
-		}
-		
-		//Save the level
-		if(e.isControlDown() && key == 0x53){ //control+S
-			saveLevel(savename);
 		}
 	}
 
@@ -1247,7 +1248,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				}
 			}
 		}
-		
+
 		getGhostImage();
 	}
 }

@@ -13,8 +13,8 @@ public class Sound {
 		if(playing != null) playing.close();
 		
 		try {
+			AudioInputStream inputStream = AudioSystem.getAudioInputStream(Sound.class.getResource("music/" + name + ".wav"));
 			playing = AudioSystem.getClip();
-			AudioInputStream inputStream = AudioSystem.getAudioInputStream(Sound.class.getResourceAsStream("music/" + name + ".wav"));
 			playing.open(inputStream);
 			playing.loop(Clip.LOOP_CONTINUOUSLY);
 			currentSong = name;

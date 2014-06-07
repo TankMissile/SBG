@@ -538,6 +538,7 @@ wa st 35 21
 wa st 35 22
 wa st 35 23
 wa dr 35 34
+wa st 36 2
 wa st 36 3
 wa st 36 4
 wa st 36 5
@@ -549,13 +550,12 @@ wa st 36 10
 wa st 36 11
 wa st 36 12
 wa st 36 13
-wa st 36 14
-wa st 36 16
+wa st 36 15
 wa st 36 23
 wa st 36 24
 wa dr 36 34
-wa st 37 3
-wa st 37 16
+wa st 37 2
+wa st 37 15
 pw pt 37 23
 wa st 37 24
 wa st 37 25
@@ -567,33 +567,33 @@ wa st 37 30
 wa st 37 31
 wa st 37 32
 wa st 37 34
-wa st 38 3
+wa st 38 2
+wa st 38 11
 wa st 38 12
-wa st 38 13
-wa st 38 16
+wa st 38 15
 pw pt 38 23
 pw pt 38 27
 pw pt 38 31
 wa wd 38 34
-wa st 39 3
-wa st 39 13
-wa st 39 16
+wa st 39 2
+wa st 39 12
+wa st 39 15
 pw pt 39 23
 pw pt 39 27
 pw pt 39 31
 wa wd 39 34
-wa st 40 3
+wa st 40 2
+wa st 40 7
 wa st 40 8
-wa st 40 9
-wa st 40 13
-wa st 40 16
+wa st 40 12
+wa st 40 15
 pw pt 40 23
 pw pt 40 27
 pw pt 40 31
 wa wd 40 34
-wa st 41 3
-wa st 41 13
-wa st 41 16
+wa st 41 2
+wa st 41 12
+wa st 41 15
 pw pt 41 23
 wa st 41 24
 wa st 41 25
@@ -602,20 +602,20 @@ wa st 41 28
 wa st 41 31
 wa st 41 32
 wa st 41 34
-wa st 42 3
-wa st 42 13
-wa st 42 16
+wa st 42 2
+wa st 42 12
+wa st 42 15
 wa st 42 23
 wa st 42 24
 wa st 42 27
 wa wd 42 31
 wa st 42 32
 wa wd 42 34
-wa st 43 3
-wa st 43 9
-wa st 43 11
-wa st 43 13
-wa st 43 16
+wa st 43 2
+wa st 43 8
+wa st 43 10
+wa st 43 12
+wa st 43 15
 wa st 43 21
 wa st 43 22
 wa st 43 23
@@ -624,20 +624,20 @@ wa st 43 27
 wa wd 43 31
 wa st 43 32
 wa wd 43 34
-wa st 44 3
+wa st 44 2
+wa st 44 9
 wa st 44 10
-wa st 44 11
-wa st 44 13
-wa st 44 16
+wa st 44 12
+wa st 44 15
 wa st 44 25
 wa st 44 26
 pw pt 44 29
 wa wd 44 31
 wa st 44 32
 wa wd 44 34
-wa st 45 3
-wa st 45 13
-wa st 45 16
+wa st 45 2
+wa st 45 12
+wa st 45 15
 wa st 45 24
 wa st 45 25
 pw pt 45 27
@@ -645,11 +645,11 @@ pw pt 45 29
 wa wd 45 31
 wa st 45 32
 wa wd 45 34
-wa st 46 3
+wa st 46 2
+wa st 46 7
 wa st 46 8
-wa st 46 9
-wa st 46 13
-wa st 46 16
+wa st 46 12
+wa st 46 15
 wa st 46 22
 wa st 46 23
 wa st 46 24
@@ -657,25 +657,25 @@ pw pt 46 29
 wa wd 46 31
 wa st 46 32
 wa wd 46 34
-wa st 47 3
-wa st 47 13
-wa st 47 16
+wa st 47 2
+wa st 47 12
+wa st 47 15
 wa st 47 24
 wa wd 47 31
 wa st 47 32
 wa wd 47 34
-wa st 48 3
+wa st 48 2
+wa st 48 11
 wa st 48 12
-wa st 48 13
-wa st 48 16
+wa st 48 15
 wa st 48 20
 wa st 48 21
 wa st 48 24
 wa wd 48 31
 wa st 48 32
 wa wd 48 34
-wa st 49 3
-wa st 49 16
+wa st 49 2
+wa st 49 15
 wa st 49 19
 wa st 49 20
 wa st 49 21
@@ -688,6 +688,7 @@ wa st 49 28
 wa st 49 31
 wa st 49 32
 wa wd 49 34
+wa st 50 2
 wa st 50 3
 wa st 50 4
 wa st 50 5
@@ -699,8 +700,7 @@ wa st 50 10
 wa st 50 11
 wa st 50 12
 wa st 50 13
-wa st 50 14
-wa st 50 16
+wa st 50 15
 wa st 50 18
 wa st 50 19
 pw pt 50 24
@@ -1673,7 +1673,6 @@ bg st 36 12
 bg st 36 13
 bg st 36 14
 bg st 36 15
-bg st 36 16
 bg st 36 22
 bg st 36 23
 bg dr 36 34
@@ -1690,7 +1689,6 @@ bg st 37 12
 bg st 37 13
 bg st 37 14
 bg st 37 15
-bg st 37 16
 bg st 37 19
 bg st 37 21
 bg st 37 22
@@ -1718,7 +1716,6 @@ bg st 38 12
 bg st 38 13
 bg st 38 14
 bg st 38 15
-bg st 38 16
 bg st 38 18
 bg st 38 19
 bg st 38 22
@@ -1736,9 +1733,9 @@ bg st 38 33
 bg st 38 34
 bg st 39 3
 bg st 39 4
-bg st 39 5
+bg wd 39 5
 bg wd 39 6
-bg wd 39 7
+bg st 39 7
 bg st 39 8
 bg st 39 9
 bg st 39 10
@@ -1747,7 +1744,6 @@ bg st 39 12
 bg st 39 13
 bg st 39 14
 bg st 39 15
-bg st 39 16
 bg wd 39 17
 bg wd 39 18
 bg wd 39 19
@@ -1768,9 +1764,9 @@ bg st 39 33
 bg st 39 34
 bg st 40 3
 bg st 40 4
-bg st 40 5
+bg wd 40 5
 bg wd 40 6
-bg wd 40 7
+bg st 40 7
 bg st 40 8
 bg st 40 9
 bg st 40 10
@@ -1779,7 +1775,6 @@ bg st 40 12
 bg st 40 13
 bg st 40 14
 bg st 40 15
-bg st 40 16
 bg st 40 22
 bg st 40 23
 bg st 40 24
@@ -1795,9 +1790,9 @@ bg st 40 33
 bg st 40 34
 bg st 41 3
 bg st 41 4
-bg st 41 5
+bg wd 41 5
 bg wd 41 6
-bg wd 41 7
+bg st 41 7
 bg st 41 8
 bg st 41 9
 bg st 41 10
@@ -1806,7 +1801,6 @@ bg st 41 12
 bg st 41 13
 bg st 41 14
 bg st 41 15
-bg st 41 16
 bg st 41 21
 bg st 41 22
 bg st 41 23
@@ -1834,7 +1828,6 @@ bg st 42 12
 bg st 42 13
 bg st 42 14
 bg st 42 15
-bg st 42 16
 bg st 42 22
 bg st 42 27
 bg st 42 28
@@ -1857,7 +1850,6 @@ bg st 43 12
 bg st 43 13
 bg st 43 14
 bg st 43 15
-bg st 43 16
 bg st 43 22
 bg st 43 27
 bg st 43 28
@@ -1880,7 +1872,6 @@ bg st 44 12
 bg st 44 13
 bg st 44 14
 bg st 44 15
-bg st 44 16
 bg st 44 26
 bg st 44 27
 bg st 44 28
@@ -1892,9 +1883,9 @@ bg st 44 33
 bg st 44 34
 bg st 45 3
 bg st 45 4
-bg st 45 5
+bg wd 45 5
 bg wd 45 6
-bg wd 45 7
+bg st 45 7
 bg st 45 8
 bg st 45 9
 bg st 45 10
@@ -1903,7 +1894,6 @@ bg st 45 12
 bg st 45 13
 bg st 45 14
 bg st 45 15
-bg st 45 16
 bg st 45 25
 bg st 45 26
 bg st 45 27
@@ -1916,9 +1906,9 @@ bg st 45 33
 bg st 45 34
 bg st 46 3
 bg st 46 4
-bg st 46 5
+bg wd 46 5
 bg wd 46 6
-bg wd 46 7
+bg st 46 7
 bg st 46 8
 bg st 46 9
 bg st 46 10
@@ -1927,7 +1917,6 @@ bg st 46 12
 bg st 46 13
 bg st 46 14
 bg st 46 15
-bg st 46 16
 bg st 46 25
 bg st 46 26
 bg st 46 27
@@ -1940,9 +1929,9 @@ bg st 46 33
 bg st 46 34
 bg st 47 3
 bg st 47 4
-bg st 47 5
+bg wd 47 5
 bg wd 47 6
-bg wd 47 7
+bg st 47 7
 bg st 47 8
 bg st 47 9
 bg st 47 10
@@ -1951,7 +1940,6 @@ bg st 47 12
 bg st 47 13
 bg st 47 14
 bg st 47 15
-bg st 47 16
 bg st 47 25
 bg st 47 26
 bg st 47 27
@@ -1974,7 +1962,6 @@ bg st 48 12
 bg st 48 13
 bg st 48 14
 bg st 48 15
-bg st 48 16
 bg st 48 25
 bg st 48 26
 bg st 48 27
@@ -1997,7 +1984,6 @@ bg st 49 12
 bg st 49 13
 bg st 49 14
 bg st 49 15
-bg st 49 16
 bg st 49 22
 bg st 49 23
 bg st 49 24
@@ -2022,7 +2008,6 @@ bg st 50 12
 bg st 50 13
 bg st 50 14
 bg st 50 15
-bg st 50 16
 bg st 50 20
 bg st 50 21
 bg st 50 22
@@ -2409,8 +2394,6 @@ en sp 1 16 0
 en sp 2 16 0
 en sp 3 16 0
 en sp 4 16 0
-en sp 40 12 0
-en sp 46 12 0
 en sp 16 24 0
 en sp 15 24 0
 en sp 14 24 0
@@ -2426,4 +2409,6 @@ en sp 44 28 0
 en sp 57 28 0
 en sp 56 26 0
 en sp 45 26 0
+en sp 40 11 0
+en sp 46 11 0
 en wt 9 14 7 3
