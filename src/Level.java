@@ -35,6 +35,7 @@ public class Level extends JLayeredPane{
 			PLAYER_CODE = "pl",
 			ENTITY_CODE = "en",
 			SPIKE_CODE = "sp",
+			SLIME_CODE = "sl",
 			WATER_CODE = "wt",
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
@@ -240,6 +241,11 @@ public class Level extends JLayeredPane{
 						entity.add(newEntity); //Add to entities array
 						this.add(newEntity, ENTITY_DEPTH, 1 );
 					}
+					else if(splitline[1].equals(SLIME_CODE)){
+						newEntity = new Slime( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]) );
+						entity.add(newEntity);
+						this.add( newEntity, ENTITY_DEPTH, 1 );
+					}
 					else if(splitline[1].equals(WATER_CODE)){
 						newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
 						fluids.add(newEntity); //Add to fluids array
@@ -303,12 +309,17 @@ public class Level extends JLayeredPane{
 		//////////////
 		if(bgm != null)
 			Sound.music(bgm);
-		
+
 		//Center the camera on the player, in case he starts off-screen
 		ClientWindow.centerCameraOnPlayer();
 
 		//Unpause the player
 		player.pause(false);
+
+		//Start all entities
+		for(Entity e : entity){
+			e.start();
+		}
 	}
 
 	//Remove an Entity
@@ -560,8 +571,8 @@ public class Level extends JLayeredPane{
 				if(j - 1 >= 0 && background[i][j-1] != null){ // Tile exists
 					//if(( w.type != Wall.DIRT || background[i][j-1].type == w.type)) //not dirt or both dirt
 					if((w.type != Wall.PLATFORM && background[i][j-1].type != Wall.PLATFORM) || background[i][j-1].type == w.type)  //not platform or both platform
-					if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE) //not eye or both eye
-						up = true;
+						if(w.type != Wall.EYE || background[i][j-1].type == Wall.EYE) //not eye or both eye
+							up = true;
 				}
 				//Check down
 				if(j + 1 < background[i].length && background[i][j+1] != null){ //exists
@@ -749,6 +760,96 @@ public class Level extends JLayeredPane{
 			}
 			else if(botright.y >= 0 && wall[i][botright.y] != null && wall[i][botright.y].type != Wall.PLATFORM){
 				bounds[RIGHT].value = wall[i][botright.y].getLocation().x;
+				break;
+			}
+		}
+		if(bounds[RIGHT].value == width) bounds[RIGHT].slidable = false;
+		return bounds;
+	}
+
+	//Find boundaries for grounded entity
+	public Boundary[] findGroundBoundaries(Entity o){
+		Boundary[] bounds = new Boundary[4];
+		bounds[UP] = new Boundary(0);
+		bounds[DOWN] = new Boundary(height);
+		bounds[LEFT] = new Boundary(0);
+		bounds[RIGHT] = new Boundary(width);
+
+		//Get points of each corner of player, in actual coordinates
+		Point topleft, topright, botleft, botright;
+		topleft = o.getLocation();
+		topright = new Point(topleft.x + o.w-1, topleft.y);
+		botleft = new Point(topleft.x, topleft.y + o.h-1);
+		botright = new Point(topleft.x + o.w-1, topleft.y + o.h-1);
+
+		//Convert points to tiled coordinates
+		topleft = new Point((topleft.x - topleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topleft.y - topleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
+		topright = new Point((topright.x - topright.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (topright.y - topright.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
+		botleft = new Point((botleft.x - botleft.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (botleft.y - botleft.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
+		botright = new Point((botright.x - botright.x % Wall.TILE_WIDTH) / Wall.TILE_WIDTH, (botright.y - botright.y % Wall.TILE_HEIGHT) / Wall.TILE_HEIGHT);
+
+		/*//get upper boundary
+		for(int i = topleft.y; i >= 0; i--){
+			if(wall[topleft.x][i] != null && wall[topleft.x][i].type != Wall.PLATFORM){
+				bounds[UP].value = wall[topleft.x][i].getLocation().y + Wall.TILE_HEIGHT;
+				break;
+			}
+			if(wall[topright.x][i] != null && wall[topright.x][i].type != Wall.PLATFORM){
+				bounds[UP].value = wall[topright.x][i].getLocation().y + Wall.TILE_HEIGHT;
+				break;
+			}
+		}*/
+
+		//get lower boundary
+		for(int i = botleft.y; i < wall[botleft.x].length; i++){
+			if(wall[botleft.x][i] != null && wall[botleft.x][i].type != Wall.PLATFORM){
+				if(!(i == botleft.y && wall[botleft.x][i].type == Wall.PLATFORM)){
+					bounds[DOWN].value = wall[botleft.x][i].getLocation().y;
+					break;
+				}
+			}
+			else if(wall[botright.x][i] != null){
+				if(!(i == botleft.y && wall[botright.x][i].type == Wall.PLATFORM)){
+					bounds[DOWN].value = wall[botright.x][i].getLocation().y;
+					break;
+				}
+			}
+		}
+
+		//get left boundary
+		for(int i = topleft.x; i >= 0; i--){
+			//if there's a wall to the left of the upper edge of the entity, that's the boundary
+			if(topleft.y >= 0 && wall[i][topleft.y]!= null && wall[i][topleft.y].type != Wall.PLATFORM){
+				bounds[LEFT].value = wall[i][topleft.y].getLocation().x + Wall.TILE_WIDTH;
+				break;
+			}
+			//If there's a wall to the left of the bottom edge of the entity, that's the boundary
+			else if(botleft.y < wall[i].length && wall[i][botleft.y]!= null && wall[i][botleft.y].type != Wall.PLATFORM){
+				bounds[LEFT].value = wall[i][botleft.y].getLocation().x + Wall.TILE_WIDTH;
+				break;
+			}
+			//If there's a drop to the left of the bottom edge of the entity, that's the boundary
+			else if(botleft.y+1 < wall[i].length && wall[i][botleft.y+1] == null){
+				bounds[LEFT].value = i*Wall.TILE_WIDTH + Wall.TILE_WIDTH;
+				break;
+			}
+		}
+
+		//get right boundary
+		for(int i = topright.x; i < wall.length; i++){
+			//if there's a wall to the right of the top edge of the entity, that's the boundary
+			if(topright.y >= 0 && wall[i][topright.y] != null && wall[i][topright.y].type != Wall.PLATFORM){
+				bounds[RIGHT].value = wall[i][topright.y].getLocation().x;
+				break;
+			}
+			//if there's a wall to the right of the bottom edge of the entity, that's the boundary
+			else if(botright.y >= 0 && wall[i][botright.y] != null && wall[i][botright.y].type != Wall.PLATFORM){
+				bounds[RIGHT].value = wall[i][botright.y].getLocation().x;
+				break;
+			}
+			//if there's a drop to the right, that's the boundary
+			else if(botright.y+1 >= 0 && wall[i][botright.y+1] == null){
+				bounds[RIGHT].value = i*Wall.TILE_WIDTH;
 				break;
 			}
 		}

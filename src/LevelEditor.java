@@ -47,6 +47,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			PLAYER_CODE = "pl",
 			ENTITY_CODE = "en",
 			SPIKE_CODE = "sp",
+			SLIME_CODE = "sl",
 			WATER_CODE = "wt",
 			MUSIC_CODE = "mu",
 			DIMENSION_CODE = "di";
@@ -54,7 +55,7 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 	//Store codes for available materials for each tile type
 	public static final String wallMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE, PLATFORM_CODE };
 	public static final String backgroundMaterials[] = { DIRT_CODE, WOOD_CODE, STONE_CODE, EYE_CODE };
-	public static final String entityMaterials[] = { SPIKE_CODE };
+	public static final String entityMaterials[] = { SPIKE_CODE, SLIME_CODE };
 	//index of material in material array
 	int currentMaterial = 0;
 
@@ -229,6 +230,11 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 						newEntity = new SpikeTrap( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]) );
 						entity.add(newEntity);
 						this.add(newEntity, ENTITY_DEPTH, 1 );
+					}
+					else if(splitline[1].equals(SLIME_CODE)){
+						newEntity = new Slime( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]) );
+						entity.add(newEntity);
+						this.add( newEntity, ENTITY_DEPTH, 1 );
 					}
 					else if(splitline[1].equals(WATER_CODE)){
 						newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
@@ -804,6 +810,11 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 				entity.add(newEntity);
 				this.add(newEntity, ENTITY_DEPTH, 1 );
 			}
+			if(entityMaterials[currentMaterial].equals(SLIME_CODE)){
+				newEntity = new Slime( currCoords.x, currCoords.y);
+				entity.add(newEntity);
+				this.add(newEntity, ENTITY_DEPTH, 1);
+			}
 			/*else if(splitline[1].equals(WATER_CODE)){
 				newEntity = new Water( Integer.parseInt(splitline[2]), Integer.parseInt(splitline[3]), Integer.parseInt(splitline[4]), Integer.parseInt(splitline[5]));
 				fluids.add(newEntity);
@@ -1070,6 +1081,9 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			if(entityMaterials[currentMaterial].equals(SPIKE_CODE)){
 				ghostImage = loadEntityImage(Wall.TILE_WIDTH, Wall.TILE_HEIGHT, "spike");
 			}
+			else if(entityMaterials[currentMaterial].equals(SLIME_CODE)){
+				ghostImage = loadSubImage(32, 32, 0, 0, "blobbeh");
+			}
 
 			ghostImage.setSize(new Dimension(Wall.TILE_WIDTH, Wall.TILE_HEIGHT));
 			ghostImage.setLocation(currCoords.x * Wall.TILE_WIDTH, currCoords.y * Wall.TILE_HEIGHT);
@@ -1098,6 +1112,20 @@ public class LevelEditor extends JLayeredPane implements KeyListener, MouseListe
 			return image;
 		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 
+		return null;
+	}
+
+	//Load a sub-image from a tilesheet
+	protected JLabel loadSubImage(int w, int h, int x, int y, String path){
+		java.net.URL imgURL = getClass().getResource("img/" + path + ".png");
+		
+		try {
+			BufferedImage sprite = ImageIO.read(imgURL).getSubimage( x*w, y*h, w, h);
+			JLabel image = new JLabel(new ImageIcon(sprite.getScaledInstance(w, h, Image.SCALE_SMOOTH)));
+			image.setSize(Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+			
+			return image;
+		} catch (IOException e) { System.err.println("The specified image could not be loaded: " + path); }
 		return null;
 	}
 

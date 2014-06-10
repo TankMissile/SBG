@@ -1,6 +1,6 @@
 di 3000 1400
 mu Zipper
-pl 72 32
+pl 50 20
 wa st 0 10
 pw pt 0 15
 wa dr 0 17
@@ -356,7 +356,6 @@ wa dr 22 19
 wa dr 22 27
 wa dr 22 28
 wa st 22 29
-wa dr 22 30
 wa st 22 31
 wa dr 22 32
 wa dr 22 34
@@ -425,7 +424,6 @@ wa dr 25 19
 wa dr 25 20
 wa dr 25 21
 wa dr 25 30
-wa st 25 31
 wa dr 25 32
 wa dr 25 34
 wa wd 26 3
@@ -845,8 +843,8 @@ wa st 66 23
 wa dr 66 34
 wa dr 67 34
 wa ey 68 12
-wa ey 68 13
-wa ey 68 14
+wa st 68 13
+wa st 68 14
 wa ey 68 15
 wa wd 68 30
 wa dr 68 34
@@ -898,8 +896,8 @@ wa dr 72 28
 wa wd 72 29
 wa dr 72 34
 wa ey 73 12
-wa ey 73 13
-wa ey 73 14
+wa st 73 13
+wa st 73 14
 wa ey 73 15
 wa dr 73 24
 wa dr 73 25
@@ -1829,6 +1827,7 @@ bg st 42 13
 bg st 42 14
 bg st 42 15
 bg st 42 22
+bg st 42 23
 bg st 42 27
 bg st 42 28
 bg st 42 29
@@ -2411,4 +2410,40 @@ en sp 56 26 0
 en sp 45 26 0
 en sp 40 11 0
 en sp 46 11 0
+en sl 53 23
+en sl 10 4
+en sl 43 20
+en sl 46 21
+en sl 51 17
+en sl 55 30
+en sl 56 28
+en sl 45 28
+en sl 72 33
+en sl 73 23
+en sl 69 24
+en sl 70 28
+en sl 68 29
+en sl 66 20
+en sl 58 20
+en sl 71 9
+en sl 68 11
+en sl 73 11
+en sl 71 13
+en sl 70 14
+en sl 47 14
+en sl 48 10
+en sl 43 11
+en sl 38 10
+en sl 44 8
+en sl 43 7
+en sl 46 6
+en sl 55 9
+en sl 65 6
+en sl 54 6
+en sl 31 8
+en sl 24 27
+en sl 7 32
+en sl 2 26
+en sl 22 30
+en sl 25 31
 en wt 9 14 7 3

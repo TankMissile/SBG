@@ -8,8 +8,10 @@ public class SpikeTrap extends Entity {
 		super();
 		this.rotation = rotation;
 		img_path = "/img/spike.png";
-		this.setBounds(x* Wall.TILE_WIDTH, y * Wall.TILE_HEIGHT, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
-		this.loadImage(img_path, Wall.TILE_WIDTH, Wall.TILE_HEIGHT);
+		this.w = Wall.TILE_WIDTH;
+		this.h = Wall.TILE_HEIGHT;
+		this.setBounds(x*Wall.TILE_WIDTH, y*Wall.TILE_HEIGHT, w, h);
+		this.loadImage(img_path, w, h);
 		this.damage = -2;
 		entity_code = Level.SPIKE_CODE;
 		//this.invincible = true;

@@ -22,7 +22,7 @@ public class Player extends Entity implements KeyListener {
 	private final int AIR_DECEL = 0; //Rate of horizontal deceleration while airborne
 	private final int VDECEL = 2; //vertical acceleration due to gravity
 	private final int JUMPSPEED = 65; //Initial vertical velocity while jumping
-	private final int WALL_JUMPSPEED = 60;
+	private final int WALL_JUMPSPEED = 60; //Initial vertical velocity while wall jumping
 
 	public static final int NORMALHEIGHT = 32;
 	public static final int NORMALWIDTH = 32;
@@ -331,6 +331,10 @@ public class Player extends Entity implements KeyListener {
 		}
 
 		int tempvdecel = (int) (VDECEL * vert_accel_modifier);
+		
+		/***************************
+		 * Horizontal Acceleration *
+		 ***************************/
 		if(!airborne) //Ground Acceleration
 		{
 			if(crouching) temphcap /= 2;
@@ -367,6 +371,9 @@ public class Player extends Entity implements KeyListener {
 			}
 		}
 
+		/*************************
+		 * Vertical Acceleration *
+		 *************************/
 		//Cap fall velocity
 		if(airborne){
 			if(leftwallgrab || rightwallgrab){
