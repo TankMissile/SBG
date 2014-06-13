@@ -46,7 +46,7 @@ public class Level extends JLayeredPane{
 	private ArrayList<Entity> entity = new ArrayList<Entity>(); //Stores all entities other than fluids
 	private ArrayList<Entity> fluids = new ArrayList<Entity>(); //Stores all fluids
 	private Player player; //The player
-	public HealthBar healthbar; //The player's health bar
+	private HealthBar healthbar; //The player's health bar
 	private GameMenu gamemenu; //The pause menu (opened with esc)
 
 	//Depths for each component of the level (lower depths are covered by higher depths)
@@ -59,9 +59,8 @@ public class Level extends JLayeredPane{
 		this.setLayout(null);
 		this.setVisible(true);
 	}
-
 	
-	
+	//Return the player object
 	public Player getPlayer(){
 		return player;
 	}
@@ -74,6 +73,13 @@ public class Level extends JLayeredPane{
 	//Is the player currently in air drop?
 	public boolean isPlayerAirDrop(){
 		return player.airdrop;
+	}
+	
+	//Move the HUD to be on-screen
+	public void moveHUD(int x, int y){
+
+		healthbar.setLocation(-x + 10, -y + 10);
+		gamemenu.setLocation(-x + ClientWindow.WIDTH/2 - gamemenu.getSize().width/2, -y + ClientWindow.HEIGHT/2 - gamemenu.getSize().height/2);
 	}
 
 	//Load a level
@@ -654,12 +660,18 @@ public class Level extends JLayeredPane{
 	{
 		if(b)
 		{
+			for(Entity e: entity)
+				e.pause(true);
+			
 			player.pause(true);
 			gamemenu.open(true);
 			this.revalidate();
 		}
 		else
 		{
+			for(Entity e: entity)
+				e.pause(false);
+			
 			gamemenu.open(false);
 			player.pause(false);
 			this.revalidate();

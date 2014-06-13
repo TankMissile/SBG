@@ -155,7 +155,7 @@ public class ClientWindow extends JFrame{
 		else if(yoffset < -1 * (level.height - HEIGHT)) yoffset = -1 * (level.height - HEIGHT);
 
 		level.setLocation(xoffset, yoffset);
-		level.healthbar.setLocation(-xoffset + 10, -yoffset + 10);
+		level.moveHUD(xoffset, yoffset);
 		activeWindow.repaint();
 	}
 	
@@ -196,7 +196,7 @@ public class ClientWindow extends JFrame{
 		else if(yoffset < -1 * (level.height - HEIGHT)) yoffset = -1 * (level.height - HEIGHT);
 
 		level.setLocation(xoffset, yoffset);
-		level.healthbar.setLocation(-xoffset + 10, -yoffset + 10);
+		level.moveHUD(xoffset, yoffset);
 		activeWindow.repaint();
 	}
 

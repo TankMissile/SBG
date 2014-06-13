@@ -59,8 +59,7 @@ public class GameMenu extends JPanel implements ActionListener
 		if(button_clicked == resume_btn)
 		{
 			/* TODO: This takes a while... figure out why */			
-			ClientWindow cw = (ClientWindow) SwingUtilities.getAncestorOfClass(ClientWindow.class, this);
-			cw.level.openGameMenu(false);
+			ClientWindow.activeWindow.level.openGameMenu(false);
 		}
 		
 		if(button_clicked == level_editor_btn)

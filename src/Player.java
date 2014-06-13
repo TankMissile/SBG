@@ -76,11 +76,11 @@ public class Player extends Entity implements KeyListener {
 		boolean kill = false;
 		Entity collidedWith = null;
 		while(!kill){
+			//Make sure the character is the focused object (for keylistener)
+			if(!this.isFocusOwner())
+				this.requestFocusInWindow();
 			if(!pause)
 			{
-				//Make sure the character is the focused object (for keylistener)
-				if(!this.isFocusOwner())
-					this.requestFocusInWindow();
 
 				//Find boundaries (if in motion)
 				//if(vert_velocity != 0 || horiz_velocity != 0 || moveright || moveleft )
@@ -206,11 +206,6 @@ public class Player extends Entity implements KeyListener {
 				//System.out.println(this.getLocation());
 			}
 		}
-	}
-
-	//Pause running (or resume, if false)
-	public void pause(boolean b){
-		pause = b;
 	}
 
 	//Link the player to his health bar
@@ -519,6 +514,8 @@ public class Player extends Entity implements KeyListener {
 		if(Configs.isMenuKey(key)){
 			if(!pause){
 				container.openGameMenu(true);
+				moveleft = false;
+				moveright = false;
 			}
 			else{
 				container.openGameMenu(false);

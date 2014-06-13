@@ -20,31 +20,34 @@ public class Slime extends Entity{
 	protected void animate(){
 		boolean kill = false;
 		while(!kill){
-			boundary = ClientWindow.level.findGroundBoundaries(this);
+			if(!pause){
+				boundary = ClientWindow.level.findGroundBoundaries(this);
 
-			//get destination
-			if(destination == 0){
-				int random = (int)(Math.random()*100); //generate random integer between 0 and 100
-				if(random < 10 && this.getLocation().x - Wall.TILE_WIDTH > boundary[LEFT].value){
-					destination = -1 * Wall.TILE_WIDTH; //move left
-					facingRight = false;
+				//get destination
+				if(destination == 0){
+					int random = (int)(Math.random()*100); //generate random integer between 0 and 100
+					if(random < 10 && this.getLocation().x - Wall.TILE_WIDTH > boundary[LEFT].value){
+						destination = -1 * Wall.TILE_WIDTH; //move left
+						facingRight = false;
+					}
+					else if (random < 20 && this.getLocation().x + w + Wall.TILE_WIDTH < boundary[RIGHT].value){
+						destination = Wall.TILE_WIDTH; //move right
+						facingRight = true;
+					}
 				}
-				else if (random < 20 && this.getLocation().x + w + Wall.TILE_WIDTH < boundary[RIGHT].value){
-					destination = Wall.TILE_WIDTH; //move right
-					facingRight = true;
+
+				if(destination < 0){
+					destination += 2;
+					this.setLocation(this.getLocation().x - 2,this.getLocation().y);
 				}
+				else if(destination > 0){
+					destination -= 2;
+					this.setLocation(this.getLocation().x + 2,this.getLocation().y);
+				}
+				anim_frame = (anim_frame+1)%last_frame;
+				this.loadImage(img_path, w, h, w*anim_frame, 0);
 			}
 
-			if(destination < 0){
-				destination += 2;
-				this.setLocation(this.getLocation().x - 2,this.getLocation().y);
-			}
-			else if(destination > 0){
-				destination -= 2;
-				this.setLocation(this.getLocation().x + 2,this.getLocation().y);
-			}
-			anim_frame = (anim_frame+1)%last_frame;
-			this.loadImage(img_path, w, h, w*anim_frame, 0);
 
 			try {
 				Thread.sleep(800);

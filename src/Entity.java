@@ -69,6 +69,11 @@ public class Entity extends JPanel{
 		return null;
 	}
 
+	//Pause running (or resume, if false)
+	public void pause(boolean b){
+		pause = b;
+	}
+
 	//Thread
 	protected void animate(){
 
