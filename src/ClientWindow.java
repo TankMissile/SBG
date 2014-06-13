@@ -37,6 +37,8 @@ public class ClientWindow extends JFrame{
 		Configs.init();
 	}
 
+	
+	
 	//Load a game level
 	public void loadLevel(String str){	
 		//Create Preloader

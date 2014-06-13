@@ -52,12 +52,20 @@ public class Level extends JLayeredPane{
 	//Depths for each component of the level (lower depths are covered by higher depths)
 	public static final Integer BACKGROUND_DEPTH = new Integer(-10), BGWALL_DEPTH = new Integer(-5), PASSABLE_WALL_DEPTH = new Integer(-3), ENTITY_DEPTH = new Integer(0), PARTICLE_DEPTH = new Integer(3), FLUID_DEPTH = new Integer(5),  WALL_DEPTH = new Integer(10), MENU_DEPTH = new Integer(200);
 
+	
+	
 	//Constructor
 	public Level(){
 		this.setLayout(null);
 		this.setVisible(true);
 	}
 
+	
+	
+	public Player getPlayer(){
+		return player;
+	}
+	
 	//Return the player's coordinates relative to the level
 	public Point getPlayerCoords(){
 		return(player.getLocation());
@@ -642,13 +650,16 @@ public class Level extends JLayeredPane{
 	}
 
 	//Open or close the in-game menu
-	public void openGameMenu(boolean b){
-		if(b){
+	public void openGameMenu(boolean b)
+	{
+		if(b)
+		{
 			player.pause(true);
 			gamemenu.open(true);
 			this.revalidate();
 		}
-		else {
+		else
+		{
 			gamemenu.open(false);
 			player.pause(false);
 			this.revalidate();
