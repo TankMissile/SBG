@@ -20,7 +20,7 @@ public class ClientWindow extends JFrame{
 	public static final int HEIGHT = 720;
 
 	public void start(){
-		this.setTitle("SBG");
+		this.setTitle("SBF");
 		this.setResizable(false);
 		this.setLocationByPlatform(true);
 		this.setIconImage((new ImageIcon(getClass().getResource("/img/gameicon.png"))).getImage());
