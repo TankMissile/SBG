@@ -5,7 +5,7 @@ A Simple Box Game
 
 
 You play as a smiling blue guy.<br />
-<img src=https://github.com/TankMissile/SBG/blob/master/res/img/gameicon.png?raw=true>
+<img src="https://github.com/TankMissile/SBG/blob/master/res/img/gameicon.png?raw=true" />
 
 <b>(Default) Controls:</b><br />
 <table>
